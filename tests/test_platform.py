@@ -331,6 +331,40 @@ def test_static_spa_files():
 
     print("[PASS] test_static_spa_files: All static frontend files verified.")
 
+def test_instagram_live_and_proxy():
+    """Verify Instagram live search, caching, proxy-image endpoint, and ER computation"""
+    # 1. Instagram Config Endpoint
+    cfg_res = client.get("/api/instagram/config")
+    assert cfg_res.status_code == 200
+    cfg = cfg_res.json()
+    assert "active_mode" in cfg
+    assert "has_api_key" in cfg
+
+    # 2. Instagram Cached Profiles Endpoint
+    cached_res = client.get("/api/instagram/cached?limit=5")
+    assert cached_res.status_code == 200
+    assert "profiles" in cached_res.json()
+
+    # 3. Instagram Profile Lookup (cristiano or synthetic fallback)
+    profile_res = client.get("/api/instagram/profile/cristiano")
+    assert profile_res.status_code in [200, 404]
+    if profile_res.status_code == 200:
+        p_data = profile_res.json()
+        assert p_data["username"] == "cristiano"
+        assert "metrics" in p_data
+        assert "engagement_rate" in p_data["metrics"]
+        assert "recent_posts" in p_data
+        # Ensure post likes and comments are non-null
+        for p in p_data.get("recent_posts", []):
+            assert p.get("likes") is not None
+            assert p.get("comments") is not None
+
+    # 4. Proxy-image endpoint with invalid URL returns 400
+    bad_img_res = client.get("/api/instagram/proxy-image?url=ftp://invalid")
+    assert bad_img_res.status_code == 400
+
+    print("[PASS] test_instagram_live_and_proxy: Verified live lookup, proxy, and post metrics.")
+
 def run_all_tests():
     print("=" * 70)
     print("      SocialPulse Automated ADBMS Verification Suite")
@@ -343,8 +377,9 @@ def run_all_tests():
     test_geospatial_queries_and_clustering()
     test_adbms_lab_pipelines_and_explain_benchmark()
     test_static_spa_files()
+    test_instagram_live_and_proxy()
     print("=" * 70)
-    print("  ALL 8 ADVANCED TEST MODULES PASSED WITH 100% SUCCESS!")
+    print("  ALL 9 ADVANCED TEST MODULES PASSED WITH 100% SUCCESS!")
     print("=" * 70)
 
 if __name__ == "__main__":

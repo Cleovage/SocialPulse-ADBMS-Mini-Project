@@ -95,3 +95,35 @@ async def update_instagram_config(payload: ApiKeyConfigPayload):
         "has_api_key": cfg["has_api_key"],
         "active_mode": cfg["active_mode"]
     }
+
+
+@router.get("/proxy-image")
+async def proxy_image(url: str = Query(..., description="External image URL to proxy")):
+    """
+    Proxy image endpoint to bypass CORS and Referrer restrictions for Instagram CDN images.
+    """
+    import httpx
+    from fastapi.responses import Response
+
+    if not url.startswith("http://") and not url.startswith("https://"):
+        return JSONResponse(status_code=400, content={"error": "Invalid URL"})
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+    }
+    try:
+        async with httpx.AsyncClient(timeout=8.0, follow_redirects=True) as client:
+            resp = await client.get(url, headers=headers)
+            if resp.status_code == 200:
+                content_type = resp.headers.get("content-type", "image/jpeg")
+                return Response(
+                    content=resp.content,
+                    media_type=content_type,
+                    headers={"Cache-Control": "public, max-age=86400"}
+                )
+            else:
+                return JSONResponse(status_code=resp.status_code, content={"error": "Remote image fetch failed"})
+    except Exception as e:
+        logger.warning(f"Failed to proxy image {url[:80]}: {e}")
+        return JSONResponse(status_code=502, content={"error": "Failed to proxy image"})

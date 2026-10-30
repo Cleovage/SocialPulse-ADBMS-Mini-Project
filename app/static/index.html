@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
   <title>SocialPulse | ADBMS Social Media Analytics Platform</title>
   
   <!-- Google Fonts: Inter -->
@@ -82,6 +83,15 @@
           <i class="fa-solid fa-users w-5 text-center text-base"></i>
           <span>Influencer Discovery</span>
         </button>
+
+        <button onclick="switchView('instagram')" id="nav-instagram" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <i class="fa-brands fa-instagram w-5 text-center text-base text-pink-400"></i>
+          <div class="flex items-center justify-between flex-1">
+            <span>Live IG Search</span>
+            <span class="badge-live text-[9px] px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 border border-pink-500/30 font-mono font-bold">LIVE</span>
+          </div>
+        </button>
+
 
         <button onclick="switchView('trends')" id="nav-trends" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
           <i class="fa-solid fa-bolt w-5 text-center text-base"></i>
@@ -165,6 +175,13 @@
         <button onclick="refreshActiveView()" title="Refresh view data" class="w-8 h-8 rounded-lg bg-dark-800 hover:bg-gray-700 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all text-xs">
           <i class="fa-solid fa-rotate-right"></i>
         </button>
+
+        <!-- Instagram API Key Settings Button -->
+        <button onclick="openApiSettingsModal()" title="Configure Instagram API Key" class="h-8 px-2.5 rounded-lg bg-dark-800 hover:bg-gray-700 border border-white/10 flex items-center gap-1.5 text-xs text-gray-300 hover:text-white transition-all">
+          <i class="fa-solid fa-key text-amber-400 text-xs"></i>
+          <span class="hidden md:inline font-mono text-[11px]">API Key</span>
+        </button>
+
 
         <!-- User Profile Pill -->
         <div class="flex items-center gap-2 pl-2 border-l border-white/5 text-xs">
@@ -345,10 +362,15 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
+              <button onclick="switchView('instagram')" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white flex items-center gap-1.5 shadow-lg shadow-pink-600/20 transition-all">
+                <i class="fa-brands fa-instagram text-xs"></i>
+                <span>Live IG Lookup</span>
+              </button>
               <button onclick="openAddCreatorModal()" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all">
                 <i class="fa-solid fa-plus text-xs"></i>
                 <span>Add Creator</span>
               </button>
+
               <button onclick="launchComparisonModal()" id="btn-compare-action" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-white/10 flex items-center gap-2 transition-all opacity-50 cursor-not-allowed" disabled>
                 <i class="fa-solid fa-scale-balanced text-xs"></i>
                 <span>Compare (<span id="compare-count">0</span>)</span>
@@ -438,9 +460,135 @@
       </section>
 
       <!-- ========================================== -->
+      <!-- VIEW: LIVE INSTAGRAM CREATOR LOOKUP        -->
+      <!-- ========================================== -->
+      <section id="view-instagram" class="view-panel space-y-6 hidden">
+
+        <!-- Hero Search Panel -->
+        <div class="glass-panel p-6 space-y-4 border border-pink-500/20 bg-gradient-to-b from-dark-900/90 to-dark-900/40">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-600 via-rose-600 to-purple-600 flex items-center justify-center text-white text-lg shadow-lg shadow-pink-600/30">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  Live Instagram Creator Lookup
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">Real-World Metrics</span>
+                </h3>
+                <p class="text-xs text-gray-400">Fetch live Instagram metrics, compute exact Engagement Rates, and persist to MongoDB cache.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openApiSettingsModal()" class="py-1.5 px-3 rounded-lg text-xs bg-dark-800 hover:bg-dark-700 border border-white/10 text-gray-300 flex items-center gap-1.5 transition-all">
+                <i class="fa-solid fa-gear text-xs text-gray-400"></i>
+                <span>API Settings</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search Input Bar -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <div class="relative flex-1">
+              <i class="fa-brands fa-instagram absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-400 text-base"></i>
+              <input type="text" id="ig-search-input" placeholder="Enter Instagram username (e.g. cristiano, therock, zuck, leomessi)..." class="w-full bg-dark-950/80 border border-white/15 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all font-mono">
+            </div>
+            <button onclick="handleInstagramSearch()" id="ig-search-btn" class="py-3 px-6 rounded-xl text-sm font-semibold bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white flex items-center justify-center gap-2 shadow-lg shadow-pink-600/25 transition-all shrink-0">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span>Search Live</span>
+            </button>
+          </div>
+
+          <!-- 5 One-Click Demo Chips -->
+          <div class="flex flex-wrap items-center gap-2 text-xs text-gray-400 pt-1">
+            <span class="text-[11px] font-mono text-gray-500">Popular Demos:</span>
+            <button onclick="fillAndSearchIg('cristiano')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@cristiano</button>
+            <button onclick="fillAndSearchIg('therock')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@therock</button>
+            <button onclick="fillAndSearchIg('zuck')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@zuck</button>
+            <button onclick="fillAndSearchIg('leomessi')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@leomessi</button>
+            <button onclick="fillAndSearchIg('mkbhd')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@mkbhd</button>
+          </div>
+        </div>
+
+        <!-- Initial Blank State / Instructions -->
+        <div id="ig-initial-state" class="glass-panel p-12 text-center space-y-3 border border-dashed border-white/10">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-dark-800/80 border border-white/10 flex items-center justify-center text-pink-400 text-2xl">
+            <i class="fa-brands fa-instagram"></i>
+          </div>
+          <h4 class="text-sm font-semibold text-white">No Instagram Profile Loaded Yet</h4>
+          <p class="text-xs text-gray-400 max-w-md mx-auto">Enter an Instagram username above or choose a demo suggestion to fetch live metrics, calculate engagement rate, and test MongoDB upsert caching.</p>
+        </div>
+
+        <!-- Loading Skeleton State -->
+        <div id="ig-loading-skeleton" class="glass-panel p-6 space-y-6 hidden border border-pink-500/20">
+          <div class="flex items-center gap-4">
+            <div class="w-20 h-20 rounded-full skeleton-shimmer shrink-0"></div>
+            <div class="space-y-2 flex-1">
+              <div class="h-6 w-48 skeleton-shimmer"></div>
+              <div class="h-4 w-32 skeleton-shimmer"></div>
+              <div class="h-3 w-64 skeleton-shimmer"></div>
+            </div>
+            <div class="h-8 w-28 skeleton-shimmer rounded-full"></div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="h-20 skeleton-shimmer rounded-xl"></div>
+            <div class="h-20 skeleton-shimmer rounded-xl"></div>
+            <div class="h-20 skeleton-shimmer rounded-xl"></div>
+          </div>
+          <div class="h-28 skeleton-shimmer rounded-xl"></div>
+          <div class="space-y-3">
+            <div class="h-4 w-36 skeleton-shimmer"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+            </div>
+          </div>
+          <div class="text-center text-xs text-pink-400 font-mono animate-pulse pt-2 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span id="ig-skeleton-status">Querying Instagram multi-tier scraper & computing engagement rate...</span>
+          </div>
+        </div>
+
+        <!-- Rich Profile Card Container -->
+        <div id="ig-profile-card" class="space-y-6 hidden">
+          <!-- Rendered dynamically by renderInstagramProfileCard(data) -->
+        </div>
+
+        <!-- Graceful Error / Fallback State -->
+        <div id="ig-error-fallback" class="glass-panel p-8 border border-amber-500/30 bg-amber-950/20 text-center space-y-4 hidden">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="space-y-1">
+            <h4 class="text-base font-bold text-white">Instagram Profile Lookup Notice</h4>
+            <p id="ig-error-message" class="text-xs text-amber-200/80 max-w-lg mx-auto">Unable to reach Instagram API or creator account not found.</p>
+          </div>
+          <div class="p-3 max-w-md mx-auto rounded-lg bg-dark-900/60 border border-white/5 text-[11px] text-gray-400">
+            <strong>Why did this happen?</strong> Instagram public lookup APIs may encounter rate limits, private accounts, or network timeouts. The platform maintains full local synthetic data continuity.
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button id="btn-ig-fallback-synthetic" onclick="fallbackToSynthetic()" class="py-2.5 px-5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white flex items-center gap-2 shadow-lg shadow-amber-600/20 transition-all">
+              <i class="fa-solid fa-database"></i>
+              <span id="ig-fallback-btn-text">Search Local Synthetic Database</span>
+            </button>
+            <button onclick="openApiSettingsModal()" class="py-2.5 px-4 rounded-xl text-xs font-semibold bg-dark-800 hover:bg-dark-700 text-gray-300 border border-white/10 flex items-center gap-2 transition-all">
+              <i class="fa-solid fa-sliders text-xs text-amber-400"></i>
+              <span>Configure API Key</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
       <!-- VIEW 3: TREND RADAR                        -->
       <!-- ========================================== -->
       <section id="view-trends" class="view-panel space-y-6 hidden">
+
         
         <!-- Header & Category Filters -->
         <div class="glass-panel p-5 space-y-4">
@@ -1124,7 +1272,62 @@
     </div>
   </div>
 
+  <!-- MODAL: INSTAGRAM API KEY SETTINGS -->
+  <div id="modal-api-settings" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
+      <button onclick="closeModal('modal-api-settings')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div>
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-brands fa-instagram text-pink-400"></i>
+          Instagram API & Scraper Settings
+        </h3>
+        <p class="text-xs text-gray-400 mt-1">Configure RapidAPI key or inspect active scraper fallback tier.</p>
+      </div>
+
+      <!-- Current Status Card -->
+      <div class="p-3.5 rounded-xl bg-dark-900/80 border border-white/10 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Current Mode:</span>
+          <span id="settings-current-mode" class="font-mono text-emerald-400 font-semibold uppercase">Loading...</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">API Key Configured:</span>
+          <span id="settings-key-status" class="font-mono text-gray-300">Loading...</span>
+        </div>
+      </div>
+
+      <form onsubmit="handleSaveApiSettings(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-gray-300 font-medium mb-1">RapidAPI Key (Optional for live scraper)</label>
+          <div class="relative">
+            <input type="password" id="settings-rapidapi-key" placeholder="Enter X-RapidAPI-Key (or leave blank for crawler/fallback)" class="w-full bg-dark-800 border border-white/10 rounded-lg py-2.5 pl-3 pr-10 text-gray-200 font-mono text-xs focus:outline-none focus:border-pink-500">
+            <button type="button" onclick="togglePasswordVisibility('settings-rapidapi-key')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+              <i id="eye-icon-settings" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+          <p class="text-[11px] text-gray-500 mt-1">If blank, SocialPulse automatically uses Direct Public Crawler Scraper & local synthetic fallback.</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-dark-950/70 border border-white/5 space-y-2 text-[11px] text-gray-400">
+          <span class="font-semibold text-gray-300 block">4-Tier Resolution Architecture:</span>
+          <p><span class="text-indigo-400 font-mono font-bold">Tier 1:</span> MongoDB Cache (24-hour TTL with instant retrieval)</p>
+          <p><span class="text-pink-400 font-mono font-bold">Tier 2:</span> RapidAPI Instagram Scraper API (when API key provided)</p>
+          <p><span class="text-emerald-400 font-mono font-bold">Tier 3:</span> Direct Public Crawler Scraper (zero API key needed)</p>
+          <p><span class="text-amber-400 font-mono font-bold">Tier 4:</span> Synthetic Benchmark Database (never breaks presentation)</p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-api-settings')" class="py-2 px-4 rounded-lg bg-dark-800 hover:bg-dark-700 text-gray-300">Cancel</button>
+          <button type="submit" class="py-2 px-5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-pink-600/20">Save Configuration</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
+
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 select-none"></div>
 
   <!-- APPLICATION SCRIPTS -->
