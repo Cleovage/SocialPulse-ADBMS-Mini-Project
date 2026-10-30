@@ -77,7 +77,7 @@ run.bat
 
 ## 🖥️ Interactive Single-Page Application (SPA) Views
 
-The platform includes 6 interactive views rendered in modern dark-mode glassmorphism:
+The platform includes 7 interactive views rendered in modern dark-mode glassmorphism:
 
 ### 1. Overview Dashboard
 - High-level KPIs: Total Creators Tracked, Posts Analyzed, Avg Engagement Rate, Cumulative Reach.
@@ -104,7 +104,7 @@ The platform includes 6 interactive views rendered in modern dark-mode glassmorp
 - **Interactive ACID Multi-Document Transaction Sandbox**: Test atomic budget allocation with options to **Commit** or **Simulate Abort/Rollback**, viewing live execution logs and WiredTiger transaction status.
 
 ### 5. Geospatial Activity Heatmap ($geoNear)
-- Interactive Leaflet.js map with CartoDB DarkMatter styling.
+- Interactive Leaflet.js map with CartoDB DarkMatter styling with authenticated CARTO API key.
 - Global tech & creator hubs selector (San Francisco, New York, London, Tokyo, Mumbai, Berlin, Paris, Dubai, Singapore, Sydney).
 - Adjustable radius distance slider (50 km to 2,500 km).
 - Executes MongoDB `$geoNear` aggregation stage using spherical trigonometry to find local social media posts and creator clusters.
@@ -114,6 +114,14 @@ The platform includes 6 interactive views rendered in modern dark-mode glassmorp
 - **Tab 2: Aggregation Pipeline Runner**: Interactive runner for `$bucket`, `$facet`, `$lookup`, and `$graphLookup`, showing PyMongo pipeline code, execution latency, and formatted output.
 - **Tab 3: Social Collaboration Graph**: Visualizer for `$graphLookup` displaying root creator node, traversal hops, and connected collaborator clusters.
 - **Tab 4: Storage & Index Inspector**: Live catalog of all collections, document volumes, B-Tree indexes, partial filters, and TTL configurations.
+
+### 7. Live Instagram Real-Time Analytics
+- **Live Search Any Username**: Search real-world Instagram creator profiles (e.g. `@cristiano`, `@leomessi`, `@therock`, `@mkbhd`, `@zuck`) on the fly.
+- **4-Tier Resilient Architecture**: MongoDB Cache (sub-millisecond instant load) $\rightarrow$ RapidAPI (if configured) $\rightarrow$ Direct Web Scraper $\rightarrow$ High-Fidelity Creator Benchmarks (guaranteed 100% demo uptime).
+- **Engagement Rate (ER) Engine**: Computes exact percentage engagement metric:
+  $$\text{ER} = \frac{\text{Average Likes} + \text{Average Comments}}{\text{Follower Count}} \times 100\%$$
+- **CORS-Proof Media Pipeline**: Server-side image streaming proxy (`/api/instagram/proxy-image`) paired with `no-referrer` and fallback badges ensures reels and post thumbnails render reliably without cross-origin CDN blocks.
+- **Post & Reel Metrics**: Displays recent media cards with play badges, captions, and always-visible live like/comment counts.
 
 ---
 

@@ -144,6 +144,9 @@ trends          idx_category_velocity_compound      { category: 1,              
 ----------------------------------------------------------------------------------------
 live_events     idx_ttl_event_24h                   { created_at: 1 }            TTL Eviction
                                                     expireAfterSeconds: 86400
+----------------------------------------------------------------------------------------
+instagram_prof  idx_ig_username_unique              { username: 1 } (unique=True) Unique B-Tree
+instagram_prof  idx_ig_cached_at                    { cached_at: -1 }            Single-Field B-Tree
 ========================================================================================
 ```
 
@@ -404,7 +407,73 @@ with client.start_session() as session:
 
 ---
 
-## 9. Comprehensive University Viva Questions & Answers
+## 9. Real-World Data Ingestion & Dynamic Caching Engine (Live Instagram Analytics)
+
+A critical extension implemented in SocialPulse is the **Live Instagram Real-Time Analytics Engine**, enabling live user-driven creator lookups, engagement rate evaluation, and MongoDB-backed caching.
+
+```
++-----------------------------------------------------------------------------------+
+|                        Client Search Input (@username)                            |
++-----------------------------------------------------------------------------------+
+                                          |
+                                          v
+                   +-----------------------------------------------+
+                   | Tier 1: MongoDB Cache (instagram_profiles)    |
+                   | Query: { username: clean_user }               |
+                   | Index: idx_ig_username_unique (B-Tree IXSCAN) |
+                   +-----------------------------------------------+
+                                     /             \
+                       [Cache Hit < 24h]         [Cache Miss or Expired]
+                                   /                 \
+                                  v                   v
+                        +------------------+    +--------------------------------+
+                        | Sub-millisecond  |    | Tier 2: RapidAPI Instagram API |
+                        | Immediate Return |    | (Optional fallback if key set) |
+                        +------------------+    +--------------------------------+
+                                                              |
+                                                    [RapidAPI Exhausted/403]
+                                                              |
+                                                              v
+                                                +--------------------------------+
+                                                | Tier 3: Direct Web Scraper     |
+                                                | (Zero-auth HTML crawler parser)|
+                                                +--------------------------------+
+                                                              |
+                                                      [Rate Limit / 429]
+                                                              |
+                                                              v
+                                                +--------------------------------+
+                                                | Tier 4: High-Fidelity Creator  |
+                                                | Benchmark Synthetic Fallback   |
+                                                +--------------------------------+
+                                                              |
+                                                              v
+                                        +-----------------------------------------------+
+                                        | Persist to MongoDB (Upsert Semantics)         |
+                                        | db.instagram_profiles.update_one(             |
+                                        |   {"username": clean_user},                   |
+                                        |   {"$set": doc}, upsert=True                  |
+                                        | )                                             |
+                                        +-----------------------------------------------+
+```
+
+### 9.1 Engagement Rate (ER) Formulation
+Engagement rate measures authentic audience interaction per follower:
+$$\text{ER} = \left( \frac{\text{Average Likes} + \text{Average Comments}}{\text{Total Follower Count}} \right) \times 100\%$$
+
+In cases where public crawlers redact per-post like tallies for large accounts, SocialPulse applies a stochastic benchmark distribution function:
+$$\mu_{\text{likes}} = \text{Followers} \times \left( \frac{\text{ER}}{100} \right) \times 0.95, \quad \sigma = \text{Var}(i)$$
+guaranteeing realistic variance across reels and image posts.
+
+### 9.2 Distributed CDN Referrer Bypass via ASGI Image Proxy
+Instagram and Meta CDNs enforce strict `Referrer-Policy: strict-origin-when-cross-origin` and CORS request barriers. To guarantee 100% media rendering without broken placeholders:
+1. **Frontend**: Elements specify `<meta name="referrer" content="no-referrer">` and an `onerror` progressive degradation fallback chain.
+2. **Backend**: An ASGI streaming proxy endpoint (`GET /api/instagram/proxy-image?url=...`) downloads media chunks with sanitized browser user-agents and streams them with proper MIME types (`image/jpeg`, `image/webp`).
+3. **Graceful Fallbacks**: If external CDNs permanently purge a media URL, the UI renders SVG gradient visual cards indicating content type (Reel vs. Photo) with live likes/comments counters.
+
+---
+
+## 10. Comprehensive University Viva Questions & Answers
 
 ### Q1: What is the fundamental difference between relational and document databases?
 **Answer:** Relational databases store data in rigid, normalized tabular structures (rows and columns) enforcing foreign key constraints. Document databases store self-contained semi-structured BSON documents (similar to JSON) where related data can be embedded as sub-documents or arrays, optimizing read performance by minimizing join operations.
@@ -479,8 +548,23 @@ with client.start_session() as session:
 ### Q20: Explain the difference between `$lookup` and traditional SQL `JOIN`.
 **Answer:** SQL `JOIN` combines rows from two or more tables into a flat Cartesian product row set. MongoDB’s `$lookup` performs a left outer join that embeds matching documents from the foreign collection directly as an **array of documents** inside the source document, preserving document hierarchy.
 
+### Q21: How does MongoDB in-database caching prevent external API rate-limiting?
+**Answer:** By storing live-fetched profile documents in the `instagram_profiles` collection with an index on `username`, subsequent queries for the same creator execute in sub-millisecond time directly from MongoDB memory cache rather than invoking external HTTP scraping endpoints. This avoids rate limits (HTTP 429) and reduces external bandwidth consumption.
+
+### Q22: What are Upsert semantics (`update_one(..., upsert=True)`) in MongoDB and why are they idempotent?
+**Answer:** An upsert operation instructs MongoDB to update a document if one matches the query filter, or insert a new document composed of the filter and update fields if no match exists. Upserts are idempotent: executing the same upsert operation multiple times yields the exact same final state without generating duplicate records.
+
+### Q23: How does the application overcome distributed CDN referrer barriers for media assets?
+**Answer:** External social networks (Instagram, Meta) protect their CDN asset URLs with `Referrer-Policy: strict-origin-when-cross-origin` and CORS restrictions, which cause standard HTML `<img>` tags on third-party domains to return 403 Forbidden. SocialPulse resolves this via a dual mechanism: setting `<meta name="referrer" content="no-referrer">` in the HTML document and providing an ASGI server-side streaming proxy (`/api/instagram/proxy-image`) as an automatic `onerror` fallback that streams images directly through the backend with sanitized headers.
+
+### Q24: How does MongoDB's dynamic schema support live external social media ingestion?
+**Answer:** External scrapers often return inconsistent or incomplete payloads depending on profile privacy, account status, and rate limits. MongoDB's flexible schema allows documents with missing fields, additional metadata, or varying post structures to coexist in the same collection without database errors or rigid schema migration scripts.
+
+### Q25: What is the benefit of combining unique indexing with upsert operations?
+**Answer:** A unique index on `username` guarantees that even in high-concurrency environments where multiple asynchronous scraper threads attempt to cache the same creator simultaneously, MongoDB enforces strict uniqueness at the B-Tree storage engine level, preventing race conditions and duplicate documents.
+
 ---
 
-## 10. Conclusion
+## 11. Conclusion
 
 The **SocialPulse Analytics Platform** effectively demonstrates the practical application of Advanced Database Management System principles. By combining thoughtful data modeling (hybrid embedding/referencing), an index hierarchy (B-tree, 2dsphere, multikey, text, TTL), aggregations (`$bucket`, `$facet`, `$graphLookup`, `$geoNear`), and ACID transaction support, the system meets the high-throughput, low-latency requirements of social media data analytics. Empirical `executionStats` benchmarks confirm that proper indexing strategies reduce scanned documents by up to 88.6%, highlighting the critical role of database design in real-world application performance.
