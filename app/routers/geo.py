@@ -2,9 +2,13 @@ from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 from app.database import Database, serialize_doc
 import logging
+import os
 
 router = APIRouter(prefix="/api/geo", tags=["Geospatial Analytics ($geoNear)"])
 logger = logging.getLogger("socialpulse.geo")
+
+DEFAULT_CARTO_API_KEY = "cb1_4ezo_1_7d64896af4f435381c3f8b1a"
+_carto_api_key = os.getenv("CARTO_API_KEY", DEFAULT_CARTO_API_KEY)
 
 GLOBAL_HUBS = [
     {"city": "San Francisco", "country": "USA", "lng": -122.4194, "lat": 37.7749},
@@ -114,3 +118,57 @@ async def get_influencer_geographic_clusters():
         if c.get("_id") and c["_id"].get("city")
     ]
     return formatted
+
+
+@router.get("/config")
+async def get_geo_config():
+    """Returns current active CARTO Map API Key configuration"""
+    global _carto_api_key
+    key = os.getenv("CARTO_API_KEY", _carto_api_key)
+    return {
+        "carto_api_key": key,
+        "is_default": key == DEFAULT_CARTO_API_KEY,
+        "key_preview": f"{key[:8]}...{key[-4:]}" if len(key) > 12 else key
+    }
+
+
+@router.post("/config")
+async def update_geo_config(payload: dict):
+    """Updates active CARTO Map API Key and optionally writes to .env"""
+    global _carto_api_key
+    new_key = payload.get("api_key", "").strip()
+    if not new_key:
+        raise HTTPException(status_code=400, detail="API key cannot be empty")
+    
+    _carto_api_key = new_key
+    os.environ["CARTO_API_KEY"] = new_key
+    
+    try:
+        env_lines = []
+        if os.path.exists(".env"):
+            with open(".env", "r", encoding="utf-8") as f:
+                env_lines = f.readlines()
+        
+        updated = False
+        new_lines = []
+        for line in env_lines:
+            if line.startswith("CARTO_API_KEY="):
+                new_lines.append(f"CARTO_API_KEY={new_key}\n")
+                updated = True
+            else:
+                new_lines.append(line)
+        if not updated:
+            new_lines.append(f"CARTO_API_KEY={new_key}\n")
+            
+        with open(".env", "w", encoding="utf-8") as f:
+            f.writelines(new_lines)
+    except Exception as e:
+        logger.warning(f"Could not persist to .env: {e}")
+
+    return {
+        "status": "success",
+        "message": "CARTO Map API Key updated successfully.",
+        "carto_api_key": new_key,
+        "key_preview": f"{new_key[:8]}...{new_key[-4:]}" if len(new_key) > 12 else new_key
+    }
+

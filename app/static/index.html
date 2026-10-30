@@ -1,1338 +1,1411 @@
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="referrer" content="no-referrer">
-  <title>SocialPulse | ADBMS Social Media Analytics Platform</title>
-  
-  <!-- Google Fonts: Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
-  <!-- Leaflet Maps CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            dark: {
-              950: '#070b13',
-              900: '#0b0f19',
-              800: '#111827',
-              700: '#1f2937',
-              600: '#374151'
-            },
-            brand: {
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca'
-            }
-          }
-        }
-      }
-    }
-  </script>
-  
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="/css/style.css">
-  
-  <!-- Chart.js & Leaflet JS -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-</head>
-<body class="bg-[#0b0f19] text-gray-100 min-h-screen flex antialiased">
-
-  <!-- SIDEBAR NAVIGATION -->
-  <aside class="w-64 bg-dark-900 border-r border-white/5 flex flex-col justify-between shrink-0 h-screen sticky top-0 z-30 select-none">
-    <div>
-      <!-- Brand Logo -->
-      <div class="p-5 border-b border-white/5 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <i class="fa-solid fa-wave-pulse text-white text-lg"></i>
-          </div>
-          <div>
-            <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-indigo-300 bg-clip-text text-transparent">SocialPulse</h1>
-            <p class="text-[10px] text-indigo-400 font-mono tracking-wider font-semibold">ADBMS • MONGODB</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Navigation Links -->
-      <nav class="p-3 space-y-1.5 text-sm font-medium">
-        <button onclick="switchView('overview')" id="nav-overview" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all glass-nav-active">
-          <i class="fa-solid fa-chart-pie w-5 text-center text-base"></i>
-          <span>Overview Dashboard</span>
-        </button>
-
-        <button onclick="switchView('influencers')" id="nav-influencers" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-          <i class="fa-solid fa-users w-5 text-center text-base"></i>
-          <span>Influencer Discovery</span>
-        </button>
-
-        <button onclick="switchView('instagram')" id="nav-instagram" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-          <i class="fa-brands fa-instagram w-5 text-center text-base text-pink-400"></i>
-          <div class="flex items-center justify-between flex-1">
-            <span>Live IG Search</span>
-            <span class="badge-live text-[9px] px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 border border-pink-500/30 font-mono font-bold">LIVE</span>
-          </div>
-        </button>
-
-
-        <button onclick="switchView('trends')" id="nav-trends" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-          <i class="fa-solid fa-bolt w-5 text-center text-base"></i>
-          <span>Trend Radar</span>
-        </button>
-
-        <button onclick="switchView('campaigns')" id="nav-campaigns" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-          <i class="fa-solid fa-bullhorn w-5 text-center text-base"></i>
-          <span>Campaigns & ACID Lab</span>
-        </button>
-
-        <button onclick="switchView('geo')" id="nav-geo" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-          <i class="fa-solid fa-earth-americas w-5 text-center text-base"></i>
-          <span>Geospatial Heatmap</span>
-        </button>
-
-        <div class="pt-2 pb-1">
-          <div class="h-px bg-white/5 my-1"></div>
-          <span class="px-4 text-[11px] font-semibold tracking-wider uppercase text-gray-500 font-mono">ADBMS Engine</span>
-        </div>
-
-        <button onclick="switchView('adbms-lab')" id="nav-adbms-lab" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-indigo-300 hover:text-white hover:bg-indigo-600/20 transition-all border border-indigo-500/20 bg-indigo-950/20">
-          <i class="fa-solid fa-flask-vial w-5 text-center text-base text-indigo-400"></i>
-          <span class="font-semibold">ADBMS Lab & Explain</span>
-        </button>
-      </nav>
-    </div>
-
-    <!-- Bottom Status & Actions -->
-    <div class="p-4 border-t border-white/5 space-y-3">
-      <div class="p-3 rounded-xl bg-dark-800/80 border border-white/5 text-xs space-y-1.5">
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">Database Engine</span>
-          <span class="inline-flex items-center gap-1.5 text-emerald-400 font-medium font-mono text-[11px]">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-emerald"></span>
-            MongoDB 7.x
-          </span>
-        </div>
-        <div class="flex items-center justify-between text-[11px]">
-          <span class="text-gray-500 font-mono">Host:</span>
-          <span class="text-gray-300 font-mono">localhost:27017</span>
-        </div>
-        <div class="flex items-center justify-between text-[11px]">
-          <span class="text-gray-500 font-mono">DB:</span>
-          <span class="text-indigo-400 font-mono font-semibold">socialpulse_analytics_db</span>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button onclick="triggerReseed()" id="btn-reseed" title="Reset & Re-populate MongoDB with synthetic benchmark data" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-200 border border-white/10 flex items-center justify-center gap-2 transition-all">
-          <i class="fa-solid fa-arrows-rotate text-gray-400"></i>
-          <span>Reseed DB</span>
-        </button>
-        <a href="/docs" target="_blank" title="Open FastAPI Interactive OpenAPI Docs" class="py-2 px-3 rounded-lg text-xs font-semibold bg-indigo-950/50 hover:bg-indigo-900/50 text-indigo-300 border border-indigo-500/30 flex items-center justify-center gap-1.5 transition-all">
-          <i class="fa-solid fa-book text-xs"></i>
-          <span>Swagger</span>
-        </a>
-      </div>
-    </div>
-  </aside>
-
-  <!-- MAIN VIEWPORT -->
-  <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-    
-    <!-- TOP BAR -->
-    <header class="h-16 bg-dark-900/80 backdrop-blur-md border-b border-white/5 px-8 flex items-center justify-between sticky top-0 z-20">
-      <div class="flex items-center gap-4">
-        <h2 id="topbar-title" class="text-lg font-bold text-white tracking-tight">Overview Dashboard</h2>
-        <span class="text-gray-600">|</span>
-        <span id="topbar-subtitle" class="text-xs text-gray-400 font-medium">Aggregated platform analytics & real-time KPIs</span>
-      </div>
-
-      <div class="flex items-center gap-4">
-        <!-- Global Search -->
-        <div class="relative w-64">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-          <input type="text" id="global-search-input" placeholder="Search creators, hashtags..." class="w-full bg-dark-800 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
-        </div>
-
-        <!-- Refresh Button -->
-        <button onclick="refreshActiveView()" title="Refresh view data" class="w-8 h-8 rounded-lg bg-dark-800 hover:bg-gray-700 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all text-xs">
-          <i class="fa-solid fa-rotate-right"></i>
-        </button>
-
-        <!-- Instagram API Key Settings Button -->
-        <button onclick="openApiSettingsModal()" title="Configure Instagram API Key" class="h-8 px-2.5 rounded-lg bg-dark-800 hover:bg-gray-700 border border-white/10 flex items-center gap-1.5 text-xs text-gray-300 hover:text-white transition-all">
-          <i class="fa-solid fa-key text-amber-400 text-xs"></i>
-          <span class="hidden md:inline font-mono text-[11px]">API Key</span>
-        </button>
-
-
-        <!-- User Profile Pill -->
-        <div class="flex items-center gap-2 pl-2 border-l border-white/5 text-xs">
-          <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-[10px]">
-            DB
-          </div>
-          <span class="text-gray-300 font-medium">ADBMS Examiner</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- CONTENT CONTAINER -->
-    <main class="flex-1 p-8 space-y-8 max-w-7xl w-full mx-auto">
-
-      <!-- ========================================== -->
-      <!-- VIEW 1: OVERVIEW DASHBOARD                 -->
-      <!-- ========================================== -->
-      <section id="view-overview" class="view-panel space-y-8 fade-in">
-        
-        <!-- Hero KPI Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <!-- KPI 1: Creators -->
-          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Creators Tracked</span>
-              <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
-                <i class="fa-solid fa-users text-sm"></i>
-              </div>
-            </div>
-            <div class="mt-4 flex items-baseline gap-2">
-              <span id="kpi-creators" class="text-3xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-emerald-400 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> +12% MoM</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mt-1">Multi-platform creator profiles</p>
-          </div>
-
-          <!-- KPI 2: Posts -->
-          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Posts Analyzed</span>
-              <div class="w-9 h-9 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
-                <i class="fa-solid fa-share-nodes text-sm"></i>
-              </div>
-            </div>
-            <div class="mt-4 flex items-baseline gap-2">
-              <span id="kpi-posts" class="text-3xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-cyan-400 font-medium">B-Tree indexed</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mt-1">Full-text & multikey hashtags indexed</p>
-          </div>
-
-          <!-- KPI 3: Avg Engagement Rate -->
-          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Avg Engagement Rate</span>
-              <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
-                <i class="fa-solid fa-chart-line text-sm"></i>
-              </div>
-            </div>
-            <div class="mt-4 flex items-baseline gap-2">
-              <span id="kpi-er" class="text-3xl font-extrabold text-white font-mono">--%</span>
-              <span class="text-xs text-purple-400 font-medium">Aggregated</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mt-1">$avg pipeline across all creators</p>
-          </div>
-
-          <!-- KPI 4: Audience Reach -->
-          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Network Reach</span>
-              <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                <i class="fa-solid fa-bullseye text-sm"></i>
-              </div>
-            </div>
-            <div class="mt-4 flex items-baseline gap-2">
-              <span id="kpi-reach" class="text-3xl font-extrabold text-white font-mono">--</span>
-              <span class="text-xs text-emerald-400 font-medium">Combined</span>
-            </div>
-            <p class="text-[11px] text-gray-500 mt-1">Cumulative audience follower network</p>
-          </div>
-        </div>
-
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Trend Velocity Bar Chart -->
-          <div class="lg:col-span-2 glass-panel p-6 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="font-bold text-white text-base">Trending Hashtag Velocity Index</h3>
-                <p class="text-xs text-gray-400">Real-time velocity score calculated via MongoDB compound indexes</p>
-              </div>
-              <span class="text-xs font-mono px-2 py-1 bg-indigo-950/60 text-indigo-400 border border-indigo-500/30 rounded">Surging Topics</span>
-            </div>
-            <div class="h-64 relative">
-              <canvas id="chart-trend-velocity"></canvas>
-            </div>
-          </div>
-
-          <!-- Platform Distribution Doughnut -->
-          <div class="glass-panel p-6 space-y-4 flex flex-col justify-between">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="font-bold text-white text-base">Platform Distribution</h3>
-                <p class="text-xs text-gray-400">$group by primary platform</p>
-              </div>
-            </div>
-            <div class="h-56 relative flex items-center justify-center">
-              <canvas id="chart-platform-dist"></canvas>
-            </div>
-            <div id="platform-legend-container" class="grid grid-cols-2 gap-2 text-xs text-gray-400 pt-2 border-t border-white/5">
-              <!-- Rendered via JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Second Row: Niche Breakdown & Top Viral Posts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          <!-- Niche Distribution Table -->
-          <div class="glass-panel p-6 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="font-bold text-white text-base">Creator Niche Aggregation</h3>
-                <p class="text-xs text-gray-400">Pipeline: $group by niche with $avg engagement rate</p>
-              </div>
-              <span class="text-xs text-gray-400 font-mono">7 Niches</span>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs">
-                <thead>
-                  <tr class="border-b border-white/10 text-gray-400 uppercase text-[10px] tracking-wider">
-                    <th class="py-2.5">Niche Category</th>
-                    <th class="py-2.5">Creators</th>
-                    <th class="py-2.5">Avg Engagement</th>
-                    <th class="py-2.5 text-right">Share</th>
-                  </tr>
-                </thead>
-                <tbody id="overview-niche-tbody" class="divide-y divide-white/5">
-                  <!-- Populated by JS -->
-                  <tr><td colspan="4" class="py-4 text-center text-gray-500">Loading niche aggregation...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Top Viral Posts -->
-          <div class="glass-panel p-6 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="font-bold text-white text-base">Top Viral Content</h3>
-                <p class="text-xs text-gray-400">Ranked by compound index on metrics.viral_score DESC</p>
-              </div>
-              <span class="text-xs px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono">Top 5</span>
-            </div>
-            <div id="overview-top-posts" class="space-y-3">
-              <!-- Populated by JS -->
-              <p class="text-xs text-gray-500 text-center py-6">Loading viral posts...</p>
-            </div>
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- ========================================== -->
-      <!-- VIEW 2: INFLUENCER DISCOVERY               -->
-      <!-- ========================================== -->
-      <section id="view-influencers" class="view-panel space-y-6 hidden">
-        
-        <!-- Controls & Filters Toolbar -->
-        <div class="glass-panel p-5 space-y-4">
-          <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
-            <!-- Search Input -->
-            <div class="relative w-full lg:w-96">
-              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-              <input type="text" id="inf-search" oninput="debounceFilterInfluencers()" placeholder="Search by name, handle (@...), or bio keyword..." class="w-full bg-dark-800 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-all">
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
-              <button onclick="switchView('instagram')" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white flex items-center gap-1.5 shadow-lg shadow-pink-600/20 transition-all">
-                <i class="fa-brands fa-instagram text-xs"></i>
-                <span>Live IG Lookup</span>
-              </button>
-              <button onclick="openAddCreatorModal()" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all">
-                <i class="fa-solid fa-plus text-xs"></i>
-                <span>Add Creator</span>
-              </button>
-
-              <button onclick="launchComparisonModal()" id="btn-compare-action" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-white/10 flex items-center gap-2 transition-all opacity-50 cursor-not-allowed" disabled>
-                <i class="fa-solid fa-scale-balanced text-xs"></i>
-                <span>Compare (<span id="compare-count">0</span>)</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Dropdown & Slider Filters -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-3 border-t border-white/5 text-xs">
-            <!-- Niche Filter -->
-            <div>
-              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Niche</label>
-              <select id="filter-niche" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
-                <option value="All">All Niches</option>
-                <option value="Tech & AI">Tech & AI</option>
-                <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
-                <option value="Gaming & Esports">Gaming & Esports</option>
-                <option value="Health & Fitness">Health & Fitness</option>
-                <option value="Finance & Crypto">Finance & Crypto</option>
-                <option value="Food & Culinary">Food & Culinary</option>
-                <option value="Travel & Adventure">Travel & Adventure</option>
-              </select>
-            </div>
-
-            <!-- Platform Filter -->
-            <div>
-              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Platform</label>
-              <select id="filter-platform" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
-                <option value="All">All Platforms</option>
-                <option value="Instagram">Instagram</option>
-                <option value="YouTube">YouTube</option>
-                <option value="TikTok">TikTok</option>
-                <option value="Twitter/X">Twitter/X</option>
-                <option value="LinkedIn">LinkedIn</option>
-              </select>
-            </div>
-
-            <!-- Tier Filter -->
-            <div>
-              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Tier</label>
-              <select id="filter-tier" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
-                <option value="All">All Tiers</option>
-                <option value="Mega (1M+)">Mega (1M+)</option>
-                <option value="Macro (500K-1M)">Macro (500K-1M)</option>
-                <option value="Mid-Tier (100K-500K)">Mid-Tier (100K-500K)</option>
-                <option value="Micro (10K-100K)">Micro (10K-100K)</option>
-                <option value="Nano (1K-10K)">Nano (1K-10K)</option>
-              </select>
-            </div>
-
-            <!-- Min ER -->
-            <div>
-              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Min ER %</label>
-              <input type="number" id="filter-min-er" step="0.5" min="0" max="20" placeholder="e.g. 5.0" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
-            </div>
-
-            <!-- Min Credibility -->
-            <div>
-              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Min Credibility</label>
-              <input type="number" id="filter-min-cred" min="0" max="100" placeholder="e.g. 90" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
-            </div>
-
-            <!-- Sort By -->
-            <div>
-              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Sort By</label>
-              <select id="filter-sort-by" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
-                <option value="metrics.followers_count">Followers (Desc)</option>
-                <option value="metrics.engagement_rate">Engagement Rate (Desc)</option>
-                <option value="metrics.credibility_score">Credibility (Desc)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Result Stats Bar -->
-        <div class="flex items-center justify-between text-xs text-gray-400 px-1">
-          <span>Found <strong id="influencer-total-count" class="text-white font-mono">0</strong> creators matching compound index query</span>
-          <span class="text-[11px] font-mono text-indigo-400">Index: { niche: 1, 'metrics.followers_count': -1 }</span>
-        </div>
-
-        <!-- Influencers Grid -->
-        <div id="influencer-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by JS -->
-          <div class="col-span-full py-12 text-center text-gray-500">Loading creators...</div>
-        </div>
-
-      </section>
-
-      <!-- ========================================== -->
-      <!-- VIEW: LIVE INSTAGRAM CREATOR LOOKUP        -->
-      <!-- ========================================== -->
-      <section id="view-instagram" class="view-panel space-y-6 hidden">
-
-        <!-- Hero Search Panel -->
-        <div class="glass-panel p-6 space-y-4 border border-pink-500/20 bg-gradient-to-b from-dark-900/90 to-dark-900/40">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-600 via-rose-600 to-purple-600 flex items-center justify-center text-white text-lg shadow-lg shadow-pink-600/30">
-                <i class="fa-brands fa-instagram"></i>
-              </div>
-              <div>
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                  Live Instagram Creator Lookup
-                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">Real-World Metrics</span>
-                </h3>
-                <p class="text-xs text-gray-400">Fetch live Instagram metrics, compute exact Engagement Rates, and persist to MongoDB cache.</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="openApiSettingsModal()" class="py-1.5 px-3 rounded-lg text-xs bg-dark-800 hover:bg-dark-700 border border-white/10 text-gray-300 flex items-center gap-1.5 transition-all">
-                <i class="fa-solid fa-gear text-xs text-gray-400"></i>
-                <span>API Settings</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Search Input Bar -->
-          <div class="flex flex-col sm:flex-row gap-3 pt-2">
-            <div class="relative flex-1">
-              <i class="fa-brands fa-instagram absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-400 text-base"></i>
-              <input type="text" id="ig-search-input" placeholder="Enter Instagram username (e.g. cristiano, therock, zuck, leomessi)..." class="w-full bg-dark-950/80 border border-white/15 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all font-mono">
-            </div>
-            <button onclick="handleInstagramSearch()" id="ig-search-btn" class="py-3 px-6 rounded-xl text-sm font-semibold bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white flex items-center justify-center gap-2 shadow-lg shadow-pink-600/25 transition-all shrink-0">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              <span>Search Live</span>
-            </button>
-          </div>
-
-          <!-- 5 One-Click Demo Chips -->
-          <div class="flex flex-wrap items-center gap-2 text-xs text-gray-400 pt-1">
-            <span class="text-[11px] font-mono text-gray-500">Popular Demos:</span>
-            <button onclick="fillAndSearchIg('cristiano')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@cristiano</button>
-            <button onclick="fillAndSearchIg('therock')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@therock</button>
-            <button onclick="fillAndSearchIg('zuck')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@zuck</button>
-            <button onclick="fillAndSearchIg('leomessi')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@leomessi</button>
-            <button onclick="fillAndSearchIg('mkbhd')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@mkbhd</button>
-          </div>
-        </div>
-
-        <!-- Initial Blank State / Instructions -->
-        <div id="ig-initial-state" class="glass-panel p-12 text-center space-y-3 border border-dashed border-white/10">
-          <div class="w-14 h-14 mx-auto rounded-2xl bg-dark-800/80 border border-white/10 flex items-center justify-center text-pink-400 text-2xl">
-            <i class="fa-brands fa-instagram"></i>
-          </div>
-          <h4 class="text-sm font-semibold text-white">No Instagram Profile Loaded Yet</h4>
-          <p class="text-xs text-gray-400 max-w-md mx-auto">Enter an Instagram username above or choose a demo suggestion to fetch live metrics, calculate engagement rate, and test MongoDB upsert caching.</p>
-        </div>
-
-        <!-- Loading Skeleton State -->
-        <div id="ig-loading-skeleton" class="glass-panel p-6 space-y-6 hidden border border-pink-500/20">
-          <div class="flex items-center gap-4">
-            <div class="w-20 h-20 rounded-full skeleton-shimmer shrink-0"></div>
-            <div class="space-y-2 flex-1">
-              <div class="h-6 w-48 skeleton-shimmer"></div>
-              <div class="h-4 w-32 skeleton-shimmer"></div>
-              <div class="h-3 w-64 skeleton-shimmer"></div>
-            </div>
-            <div class="h-8 w-28 skeleton-shimmer rounded-full"></div>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="h-20 skeleton-shimmer rounded-xl"></div>
-            <div class="h-20 skeleton-shimmer rounded-xl"></div>
-            <div class="h-20 skeleton-shimmer rounded-xl"></div>
-          </div>
-          <div class="h-28 skeleton-shimmer rounded-xl"></div>
-          <div class="space-y-3">
-            <div class="h-4 w-36 skeleton-shimmer"></div>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-              <div class="h-28 skeleton-shimmer rounded-lg"></div>
-              <div class="h-28 skeleton-shimmer rounded-lg"></div>
-              <div class="h-28 skeleton-shimmer rounded-lg"></div>
-              <div class="h-28 skeleton-shimmer rounded-lg"></div>
-              <div class="h-28 skeleton-shimmer rounded-lg"></div>
-              <div class="h-28 skeleton-shimmer rounded-lg"></div>
-            </div>
-          </div>
-          <div class="text-center text-xs text-pink-400 font-mono animate-pulse pt-2 flex items-center justify-center gap-2">
-            <i class="fa-solid fa-circle-notch fa-spin"></i>
-            <span id="ig-skeleton-status">Querying Instagram multi-tier scraper & computing engagement rate...</span>
-          </div>
-        </div>
-
-        <!-- Rich Profile Card Container -->
-        <div id="ig-profile-card" class="space-y-6 hidden">
-          <!-- Rendered dynamically by renderInstagramProfileCard(data) -->
-        </div>
-
-        <!-- Graceful Error / Fallback State -->
-        <div id="ig-error-fallback" class="glass-panel p-8 border border-amber-500/30 bg-amber-950/20 text-center space-y-4 hidden">
-          <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-          </div>
-          <div class="space-y-1">
-            <h4 class="text-base font-bold text-white">Instagram Profile Lookup Notice</h4>
-            <p id="ig-error-message" class="text-xs text-amber-200/80 max-w-lg mx-auto">Unable to reach Instagram API or creator account not found.</p>
-          </div>
-          <div class="p-3 max-w-md mx-auto rounded-lg bg-dark-900/60 border border-white/5 text-[11px] text-gray-400">
-            <strong>Why did this happen?</strong> Instagram public lookup APIs may encounter rate limits, private accounts, or network timeouts. The platform maintains full local synthetic data continuity.
-          </div>
-          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button id="btn-ig-fallback-synthetic" onclick="fallbackToSynthetic()" class="py-2.5 px-5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white flex items-center gap-2 shadow-lg shadow-amber-600/20 transition-all">
-              <i class="fa-solid fa-database"></i>
-              <span id="ig-fallback-btn-text">Search Local Synthetic Database</span>
-            </button>
-            <button onclick="openApiSettingsModal()" class="py-2.5 px-4 rounded-xl text-xs font-semibold bg-dark-800 hover:bg-dark-700 text-gray-300 border border-white/10 flex items-center gap-2 transition-all">
-              <i class="fa-solid fa-sliders text-xs text-amber-400"></i>
-              <span>Configure API Key</span>
-            </button>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ========================================== -->
-      <!-- VIEW 3: TREND RADAR                        -->
-      <!-- ========================================== -->
-      <section id="view-trends" class="view-panel space-y-6 hidden">
-
-        
-        <!-- Header & Category Filters -->
-        <div class="glass-panel p-5 space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 class="font-bold text-white text-base">Viral Velocity Radar</h3>
-              <p class="text-xs text-gray-400">Tracking hashtag surge rates, sentiment distributions, and platform breakouts</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-400">Sort by:</span>
-              <select id="trend-sort" onchange="loadTrends()" class="bg-dark-800 border border-white/10 rounded-md py-1 px-2.5 text-xs text-gray-200 focus:outline-none">
-                <option value="velocity_score">Velocity Score</option>
-                <option value="viral_index">Viral Index</option>
-                <option value="volume_24h">24h Volume</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Category Pills -->
-          <div id="trend-category-pills" class="flex flex-wrap gap-2 pt-2 border-t border-white/5 text-xs">
-            <button onclick="filterTrendCategory('All')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition-all">All Categories</button>
-            <button onclick="filterTrendCategory('Tech & AI')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Tech & AI</button>
-            <button onclick="filterTrendCategory('Fashion & Lifestyle')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Fashion & Lifestyle</button>
-            <button onclick="filterTrendCategory('Gaming & Esports')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Gaming & Esports</button>
-            <button onclick="filterTrendCategory('Health & Fitness')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Health & Fitness</button>
-            <button onclick="filterTrendCategory('Finance & Crypto')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Finance & Crypto</button>
-            <button onclick="filterTrendCategory('Food & Culinary')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Food & Culinary</button>
-            <button onclick="filterTrendCategory('Travel & Adventure')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Travel & Adventure</button>
-          </div>
-        </div>
-
-        <!-- Trends Grid -->
-        <div id="trends-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by JS -->
-          <div class="col-span-full py-12 text-center text-gray-500">Loading trending topics...</div>
-        </div>
-
-      </section>
-
-      <!-- ========================================== -->
-      <!-- VIEW 4: CAMPAIGNS & ACID TRANSACTIONS      -->
-      <!-- ========================================== -->
-      <section id="view-campaigns" class="view-panel space-y-8 hidden">
-        
-        <!-- Header Info -->
-        <div class="glass-panel p-6 border-l-4 border-indigo-500">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 class="text-lg font-bold text-white">Brand Campaign Management & ACID Transactions</h3>
-              <p class="text-xs text-gray-400 mt-1">Multi-document transaction demonstration with commit and atomic rollback simulation</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="text-xs font-mono px-3 py-1.5 rounded-lg bg-dark-800 border border-white/10 text-indigo-400">
-                <i class="fa-solid fa-shield-halved mr-1"></i> ACID Guarantee: Atomicity & Isolation
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Brand Campaigns List -->
-        <div class="space-y-4">
-          <h4 class="text-sm font-semibold text-gray-300 uppercase tracking-wider font-mono">Active Campaigns</h4>
-          <div id="campaigns-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Populated by JS -->
-            <p class="text-xs text-gray-500">Loading campaigns...</p>
-          </div>
-        </div>
-
-        <!-- Campaign Creator Matchmaker Tool -->
-        <div class="glass-panel p-6 space-y-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <h4 class="font-bold text-white text-base">Intelligent Creator Matchmaker</h4>
-              <p class="text-xs text-gray-400">Filter creators fitting budget constraints and high credibility metrics</p>
-            </div>
-            <span class="text-xs px-2.5 py-1 rounded bg-indigo-950 text-indigo-400 border border-indigo-500/30 font-mono">MongoDB Algorithmic Match</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs pt-2">
-            <div>
-              <label class="block text-gray-400 mb-1">Target Niche</label>
-              <select id="match-niche" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
-                <option value="Tech & AI">Tech & AI</option>
-                <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
-                <option value="Gaming & Esports">Gaming & Esports</option>
-                <option value="Health & Fitness">Health & Fitness</option>
-                <option value="Finance & Crypto">Finance & Crypto</option>
-                <option value="Food & Culinary">Food & Culinary</option>
-                <option value="Travel & Adventure">Travel & Adventure</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">Max Budget per Creator ($)</label>
-              <input type="number" id="match-budget" value="15000" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">Min Credibility Score</label>
-              <input type="number" id="match-cred" value="90" min="0" max="100" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
-            </div>
-            <div class="flex items-end">
-              <button onclick="runMatchmaker()" class="w-full py-2 px-4 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center justify-center gap-2 transition-all">
-                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                <span>Find Matches</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Matchmaker Results Container -->
-          <div id="matchmaker-results" class="pt-4 divide-y divide-white/5 space-y-2">
-            <p class="text-xs text-gray-500 italic">Select criteria and click "Find Matches" to see recommended creators.</p>
-          </div>
-        </div>
-
-        <!-- ACID Multi-Document Transaction Interactive Lab -->
-        <div class="glass-panel p-6 border border-indigo-500/30 space-y-5 bg-gradient-to-br from-dark-900 to-indigo-950/20">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/40 flex items-center justify-center">
-                <i class="fa-solid fa-microchip"></i>
-              </div>
-              <div>
-                <h4 class="font-bold text-white text-base">ACID Transaction Execution Sandbox</h4>
-                <p class="text-xs text-gray-400">Test atomic budget allocation vs intentional aborted rollback</p>
-              </div>
-            </div>
-            <span class="text-xs font-mono px-2.5 py-1 bg-dark-800 border border-white/10 text-emerald-400">
-              `session.start_transaction()`
-            </span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-2">
-            <div>
-              <label class="block text-gray-400 mb-1">Target Campaign</label>
-              <select id="tx-campaign-select" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
-                <!-- Populated by JS -->
-              </select>
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">Influencer Handle</label>
-              <input type="text" id="tx-handle" value="@elena_ai_tech" placeholder="@handle" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200 font-mono">
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">Allocation Fee ($)</label>
-              <input type="number" id="tx-fee" value="5000" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200 font-mono">
-            </div>
-          </div>
-
-          <!-- Transaction Trigger Buttons -->
-          <div class="flex flex-col sm:flex-row items-center gap-4 pt-2">
-            <button onclick="executeTransaction(false)" class="flex-1 py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
-              <i class="fa-solid fa-check text-xs"></i>
-              <span>Execute & Commit Transaction</span>
-            </button>
-            <button onclick="executeTransaction(true)" class="flex-1 py-2.5 px-4 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 transition-all">
-              <i class="fa-solid fa-ban text-xs"></i>
-              <span>Simulate Abort / Rollback</span>
-            </button>
-          </div>
-
-          <!-- Transaction Result Terminal -->
-          <div class="mt-4">
-            <div class="flex items-center justify-between text-[11px] text-gray-400 font-mono px-2 py-1 bg-dark-950 border-t border-l border-r border-white/10 rounded-t">
-              <span>TRANSACTION OUTPUT LOG</span>
-              <span id="tx-status-badge" class="text-gray-500">READY</span>
-            </div>
-            <pre id="tx-terminal-output" class="code-box p-4 text-gray-300 overflow-x-auto rounded-t-none max-h-48 text-xs font-mono">// Ready to run transaction. Click 'Commit' or 'Simulate Rollback' above.</pre>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ========================================== -->
-      <!-- VIEW 5: GEOSPATIAL HEATMAP                 -->
-      <!-- ========================================== -->
-      <section id="view-geo" class="view-panel space-y-6 hidden">
-        
-        <!-- Header & Hub Selector -->
-        <div class="glass-panel p-5 space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 class="font-bold text-white text-base">Geospatial Analytics & $geoNear Aggregation</h3>
-              <p class="text-xs text-gray-400">Spherical distance queries powered by MongoDB 2dsphere indexes</p>
-            </div>
-            <span class="text-xs px-2.5 py-1 rounded bg-indigo-950 text-indigo-400 border border-indigo-500/30 font-mono">2dsphere Index: { location: "2dsphere" }</span>
-          </div>
-
-          <!-- Quick City Hub Buttons -->
-          <div>
-            <span class="text-[11px] text-gray-400 uppercase font-semibold tracking-wider font-mono block mb-2">Global Tech & Creator Hubs:</span>
-            <div id="geo-hub-buttons" class="flex flex-wrap gap-2 text-xs">
-              <!-- Rendered via JS -->
-            </div>
-          </div>
-
-          <!-- Radius & Coordinates Controls -->
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs pt-2 border-t border-white/5">
-            <div>
-              <label class="block text-gray-400 mb-1">Center Longitude</label>
-              <input type="number" id="geo-lng" step="0.0001" value="-122.4194" class="w-full bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-gray-200 font-mono">
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">Center Latitude</label>
-              <input type="number" id="geo-lat" step="0.0001" value="37.7749" class="w-full bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-gray-200 font-mono">
-            </div>
-            <div>
-              <label class="block text-gray-400 mb-1">Max Distance: <span id="geo-radius-val" class="text-indigo-400 font-bold">500</span> km</label>
-              <input type="range" id="geo-radius" min="50" max="2500" step="50" value="500" oninput="document.getElementById('geo-radius-val').innerText = this.value" class="w-full accent-indigo-500">
-            </div>
-            <div class="flex items-end">
-              <button onclick="runGeoNearQuery()" class="w-full py-2 px-4 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center justify-center gap-2 transition-all">
-                <i class="fa-solid fa-location-crosshairs text-xs"></i>
-                <span>Query $geoNear</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Map & Results Side-by-Side -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Leaflet Map Container -->
-          <div class="lg:col-span-2 glass-panel p-2 overflow-hidden h-[500px] relative rounded-xl border border-white/10">
-            <div id="geo-map" class="w-full h-full rounded-lg"></div>
-          </div>
-
-          <!-- Nearby Posts Sidebar -->
-          <div class="glass-panel p-5 space-y-4 h-[500px] flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between pb-3 border-b border-white/10">
-                <h4 class="font-bold text-white text-sm">Nearby Posts Found</h4>
-                <span id="geo-posts-count" class="text-xs px-2 py-0.5 rounded bg-dark-800 text-indigo-400 font-mono">0 posts</span>
-              </div>
-              <div id="geo-posts-list" class="divide-y divide-white/5 overflow-y-auto max-h-[400px] pr-1 space-y-2 mt-2">
-                <p class="text-xs text-gray-500 text-center py-12">Click a city hub above or hit 'Query $geoNear' to find local social posts.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ========================================== -->
-      <!-- VIEW 6: ADBMS ARCHITECTURE & EXPLAIN LAB   -->
-      <!-- ========================================== -->
-      <section id="view-adbms-lab" class="view-panel space-y-6 hidden">
-        
-        <!-- Lab Header -->
-        <div class="glass-panel p-6 border-l-4 border-indigo-500">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h3 class="text-lg font-bold text-white">ADBMS Aggregation & Performance Benchmark Lab</h3>
-              <p class="text-xs text-gray-400 mt-1">Live query plan executionStats, recursive graph traversal, and indexing benchmarks</p>
-            </div>
-            <div class="flex items-center gap-2 text-xs font-mono">
-              <span class="px-3 py-1 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30">Explain: IXSCAN vs COLLSCAN</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Subtabs Navigation -->
-        <div class="flex border-b border-white/10 space-x-2 text-xs font-medium">
-          <button onclick="switchLabTab('explain')" id="labtab-explain" class="py-2.5 px-4 rounded-t-lg bg-indigo-600/20 text-indigo-300 border-b-2 border-indigo-500 font-semibold transition-all">
-            <i class="fa-solid fa-gauge-high mr-1.5"></i> Explain Plan Benchmark
-          </button>
-          <button onclick="switchLabTab('pipelines')" id="labtab-pipelines" class="py-2.5 px-4 rounded-t-lg text-gray-400 hover:text-white transition-all">
-            <i class="fa-solid fa-diagram-project mr-1.5"></i> Aggregation Pipelines ($bucket, $facet, $lookup)
-          </button>
-          <button onclick="switchLabTab('graph')" id="labtab-graph" class="py-2.5 px-4 rounded-t-lg text-gray-400 hover:text-white transition-all">
-            <i class="fa-solid fa-circle-nodes mr-1.5"></i> Social Graph ($graphLookup)
-          </button>
-          <button onclick="switchLabTab('storage')" id="labtab-storage" class="py-2.5 px-4 rounded-t-lg text-gray-400 hover:text-white transition-all">
-            <i class="fa-solid fa-hard-drive mr-1.5"></i> Database & Index Inspector
-          </button>
-        </div>
-
-        <!-- LAB TAB 1: EXPLAIN PLAN BENCHMARK -->
-        <div id="lab-tab-explain" class="space-y-6">
-          
-          <!-- Explain Plan Controls -->
-          <div class="glass-panel p-5 space-y-4">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h4 class="font-bold text-white text-sm">Real-time MongoDB executionStats Comparison</h4>
-                <p class="text-xs text-gray-400">Compare indexed query (IXSCAN) vs forced collection scan (COLLSCAN via $natural hint)</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <select id="explain-platform" class="bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-xs text-gray-200">
-                  <option value="YouTube">YouTube</option>
-                  <option value="Instagram">Instagram</option>
-                  <option value="TikTok">TikTok</option>
-                  <option value="Twitter/X">Twitter/X</option>
-                </select>
-                <input type="number" id="explain-min-likes" value="40000" placeholder="Min likes" class="w-28 bg-dark-800 border border-white/10 rounded py-1.5 px-2 text-xs text-gray-200">
-                <button onclick="runExplainBenchmark()" class="py-1.5 px-4 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-all shadow-md">
-                  <i class="fa-solid fa-bolt text-xs"></i>
-                  <span>Run Benchmark</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Benchmark Side-by-Side Comparison -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Indexed Card -->
-            <div class="glass-panel p-6 border border-emerald-500/30 space-y-4 relative overflow-hidden bg-gradient-to-br from-dark-900 to-emerald-950/10">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-check-double"></i> INDEXED EXECUTION
-                </span>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">IXSCAN</span>
-              </div>
-              
-              <div class="text-xs text-gray-400 font-mono">
-                Index: <strong class="text-white">idx_platform_likes_date_compound</strong>
-              </div>
-
-              <div class="grid grid-cols-3 gap-3 pt-2">
-                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
-                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Docs Examined</span>
-                  <span id="bench-idx-docs" class="text-xl font-bold font-mono text-emerald-400">--</span>
-                </div>
-                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
-                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Keys Examined</span>
-                  <span id="bench-idx-keys" class="text-xl font-bold font-mono text-white">--</span>
-                </div>
-                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
-                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Time (ms)</span>
-                  <span id="bench-idx-time" class="text-xl font-bold font-mono text-cyan-400">--</span>
-                </div>
-              </div>
-
-              <div class="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-300">
-                <i class="fa-solid fa-circle-check mr-1.5"></i>
-                Query jumps directly to B-Tree index pages, bypassing all irrelevant documents.
-              </div>
-            </div>
-
-            <!-- Unindexed / Collscan Card -->
-            <div class="glass-panel p-6 border border-rose-500/30 space-y-4 relative overflow-hidden bg-gradient-to-br from-dark-900 to-rose-950/10">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-triangle-exclamation"></i> UNINDEXED / NATURAL SCAN
-                </span>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">COLLSCAN</span>
-              </div>
-
-              <div class="text-xs text-gray-400 font-mono">
-                Index: <strong class="text-white">None (Forced Collection Scan)</strong>
-              </div>
-
-              <div class="grid grid-cols-3 gap-3 pt-2">
-                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
-                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Docs Examined</span>
-                  <span id="bench-coll-docs" class="text-xl font-bold font-mono text-rose-400">--</span>
-                </div>
-                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
-                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Keys Examined</span>
-                  <span class="text-xl font-bold font-mono text-gray-500">0</span>
-                </div>
-                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
-                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Time (ms)</span>
-                  <span id="bench-coll-time" class="text-xl font-bold font-mono text-rose-300">--</span>
-                </div>
-              </div>
-
-              <div class="p-3 rounded-lg bg-rose-950/30 border border-rose-500/20 text-xs text-rose-300">
-                <i class="fa-solid fa-circle-xmark mr-1.5"></i>
-                Forced to scan every single document in the collection (100% of collection read from disk/RAM).
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Optimization Gain Summary Banner -->
-          <div class="glass-panel p-5 bg-gradient-to-r from-indigo-950/60 to-purple-950/60 border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xl">
-                <i class="fa-solid fa-gauge"></i>
-              </div>
-              <div>
-                <h4 class="font-bold text-white text-sm">ADBMS Performance Verdict</h4>
-                <p id="bench-verdict-text" class="text-xs text-gray-300 mt-0.5">Click 'Run Benchmark' to measure efficiency gain.</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">Scan Reduction</span>
-              <span id="bench-reduction-pct" class="text-2xl font-black text-emerald-400 font-mono">--%</span>
-            </div>
-          </div>
-
-          <!-- Raw Explain Output Accordion -->
-          <details class="glass-panel p-4 text-xs">
-            <summary class="font-semibold text-gray-300 cursor-pointer flex items-center gap-2">
-              <i class="fa-solid fa-code text-indigo-400"></i>
-              <span>Inspect Raw MongoDB executionStats JSON Payloads</span>
-            </summary>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div>
-                <span class="text-emerald-400 font-mono text-[11px] block mb-1">Indexed explain()['executionStats']</span>
-                <pre id="raw-explain-idx" class="code-box p-3 text-gray-300 overflow-x-auto max-h-64 font-mono">// Awaiting benchmark</pre>
-              </div>
-              <div>
-                <span class="text-rose-400 font-mono text-[11px] block mb-1">Unindexed explain()['executionStats']</span>
-                <pre id="raw-explain-coll" class="code-box p-3 text-gray-300 overflow-x-auto max-h-64 font-mono">// Awaiting benchmark</pre>
-              </div>
-            </div>
-          </details>
-
-        </div>
-
-        <!-- LAB TAB 2: AGGREGATION PIPELINES -->
-        <div id="lab-tab-pipelines" class="space-y-6 hidden">
-          
-          <div class="glass-panel p-5 space-y-4">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h4 class="font-bold text-white text-sm">MongoDB Aggregation Pipeline Explorer</h4>
-                <p class="text-xs text-gray-400">Run multi-stage pipelines and analyze stage transformations in real-time</p>
-              </div>
-              <div class="flex flex-wrap gap-2 text-xs">
-                <button onclick="runPipeline('bucketing')" class="pipeline-btn py-1.5 px-3 rounded bg-indigo-600 text-white font-medium" data-pipe="bucketing">Pipeline 1: $bucket</button>
-                <button onclick="runPipeline('facet')" class="pipeline-btn py-1.5 px-3 rounded bg-dark-800 text-gray-300 hover:bg-dark-700" data-pipe="facet">Pipeline 2: $facet</button>
-                <button onclick="runPipeline('lookup')" class="pipeline-btn py-1.5 px-3 rounded bg-dark-800 text-gray-300 hover:bg-dark-700" data-pipe="lookup">Pipeline 3: $lookup</button>
-                <button onclick="runPipeline('graph')" class="pipeline-btn py-1.5 px-3 rounded bg-dark-800 text-gray-300 hover:bg-dark-700" data-pipe="graph">Pipeline 4: $graphLookup</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pipeline Info & Latency Banner -->
-          <div class="glass-panel p-4 flex items-center justify-between text-xs">
-            <div class="flex items-center gap-3">
-              <i class="fa-solid fa-circle-play text-emerald-400 text-base"></i>
-              <div>
-                <span id="pipeline-title" class="font-bold text-white block">Pipeline 1: Follower Bucketing Tier Analysis ($bucket)</span>
-                <span id="pipeline-stages" class="text-gray-400 font-mono text-[11px]">Stages: $bucket, $sum, $avg, $push</span>
-              </div>
-            </div>
-            <div class="text-right font-mono">
-              <span class="text-gray-400 text-[10px] block">SERVER EXECUTION</span>
-              <span id="pipeline-latency" class="text-indigo-400 font-bold">-- ms</span>
-            </div>
-          </div>
-
-          <!-- Pipeline Code & Output Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Code Box -->
-            <div class="glass-panel p-4 space-y-2">
-              <div class="flex items-center justify-between text-xs text-gray-400 font-mono pb-2 border-b border-white/5">
-                <span>MONGODB AGGREGATION PIPELINE CODE</span>
-                <span class="text-indigo-400">PyMongo Syntax</span>
-              </div>
-              <pre id="pipeline-code-display" class="code-box p-4 text-emerald-300 overflow-x-auto max-h-96 font-mono text-xs">// Loading pipeline definition...</pre>
-            </div>
-
-            <!-- Live Output Box -->
-            <div class="glass-panel p-4 space-y-2">
-              <div class="flex items-center justify-between text-xs text-gray-400 font-mono pb-2 border-b border-white/5">
-                <span>AGGREGATION OUTPUT RESULTS</span>
-                <span class="text-cyan-400">JSON Result</span>
-              </div>
-              <pre id="pipeline-output-display" class="code-box p-4 text-cyan-200 overflow-x-auto max-h-96 font-mono text-xs">// Loading execution results...</pre>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- LAB TAB 3: SOCIAL GRAPH ($graphLookup) -->
-        <div id="lab-tab-graph" class="space-y-6 hidden">
-          
-          <div class="glass-panel p-5 space-y-4">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <h4 class="font-bold text-white text-sm">Recursive Social Graph Traversal ($graphLookup)</h4>
-                <p class="text-xs text-gray-400">Traverse multi-hop creator collaboration networks directly inside the database</p>
-              </div>
-              <div class="flex items-center gap-3">
-                <input type="text" id="graph-start-handle" value="@elena_ai_tech" placeholder="@handle" class="bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-xs text-gray-200 font-mono">
-                <select id="graph-depth" class="bg-dark-800 border border-white/10 rounded py-1.5 px-2.5 text-xs text-gray-200">
-                  <option value="1">Depth 1 Hop</option>
-                  <option value="2" selected>Depth 2 Hops</option>
-                  <option value="3">Depth 3 Hops</option>
-                </select>
-                <button onclick="runGraphTraversal()" class="py-1.5 px-4 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-all">
-                  <i class="fa-solid fa-network-wired text-xs"></i>
-                  <span>Traverse Graph</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Visual Node Network Display -->
-          <div class="glass-panel p-6 space-y-6">
-            <div class="flex items-center justify-between">
-              <div>
-                <h5 class="font-bold text-white text-sm">Network Node Hierarchy</h5>
-                <p class="text-xs text-gray-400">Total Connected Creators in Cluster: <strong id="graph-network-size" class="text-indigo-400 font-mono">--</strong></p>
-              </div>
-              <span id="graph-latency" class="text-xs font-mono text-gray-400">Execution: -- ms</span>
-            </div>
-
-            <!-- Root Creator Node -->
-            <div id="graph-root-node" class="p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/40 flex items-center gap-4 max-w-md mx-auto shadow-lg shadow-indigo-600/10">
-              <!-- Rendered via JS -->
-            </div>
-
-            <!-- Connective Arrows -->
-            <div class="text-center text-indigo-400 text-lg">
-              <i class="fa-solid fa-angles-down animate-bounce"></i>
-            </div>
-
-            <!-- Connected Collaborators Grid -->
-            <div>
-              <span class="text-xs font-mono uppercase text-gray-400 tracking-wider block mb-3 text-center">Connected Peer Collaborators ($graphLookup Recursive Nodes)</span>
-              <div id="graph-nodes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Rendered via JS -->
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- LAB TAB 4: DATABASE & INDEX STORAGE INSPECTOR -->
-        <div id="lab-tab-storage" class="space-y-6 hidden">
-          <div class="glass-panel p-5 space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h4 class="font-bold text-white text-sm">MongoDB Schema & Index Storage Inspector</h4>
-                <p class="text-xs text-gray-400">Inspect collections, document volumes, B-Tree index specifications, and TTL expiration settings</p>
-              </div>
-              <button onclick="loadDatabaseStats()" class="py-1.5 px-3 rounded bg-dark-800 hover:bg-dark-700 text-gray-200 border border-white/10 text-xs font-medium transition-all">
-                <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Stats
-              </button>
-            </div>
-          </div>
-
-          <div id="collections-storage-list" class="space-y-4">
-            <!-- Populated by JS -->
-            <p class="text-xs text-gray-500 text-center py-12">Loading collection statistics...</p>
-          </div>
-        </div>
-
-      </section>
-
-    </main>
-
-  </div>
-
-  <!-- ========================================== -->
-  <!-- MODALS                                     -->
-  <!-- ========================================== -->
-
-  <!-- MODAL 1: INFLUENCER PROFILE & DEMOGRAPHICS -->
-  <div id="modal-influencer-detail" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
-      <button onclick="closeModal('modal-influencer-detail')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <div id="modal-detail-content">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 2: HEAD-TO-HEAD CREATOR COMPARISON -->
-  <div id="modal-comparison" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-5xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
-      <button onclick="closeModal('modal-comparison')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <div>
-        <h3 class="text-lg font-bold text-white">Head-to-Head Creator Benchmark</h3>
-        <p class="text-xs text-gray-400">Multi-metric comparative analysis between selected influencers</p>
-      </div>
-
-      <div id="modal-comparison-content">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL 3: ADD NEW CREATOR -->
-  <div id="modal-add-creator" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
-      <button onclick="closeModal('modal-add-creator')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <div>
-        <h3 class="text-lg font-bold text-white">Register New Creator Document</h3>
-        <p class="text-xs text-gray-400">Inserts a document into MongoDB with unique index enforcement on handle</p>
-      </div>
-
-      <form id="form-add-creator" onsubmit="submitAddCreator(event)" class="space-y-4 text-xs">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-gray-400 mb-1">Creator Name</label>
-            <input type="text" id="add-name" required placeholder="Elena Rostova" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-          </div>
-          <div>
-            <label class="block text-gray-400 mb-1">Handle (@...)</label>
-            <input type="text" id="add-handle" required placeholder="@elena_ai_tech" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200 font-mono">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-gray-400 mb-1">Niche</label>
-            <select id="add-niche" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-              <option value="Tech & AI">Tech & AI</option>
-              <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
-              <option value="Gaming & Esports">Gaming & Esports</option>
-              <option value="Health & Fitness">Health & Fitness</option>
-              <option value="Finance & Crypto">Finance & Crypto</option>
-              <option value="Food & Culinary">Food & Culinary</option>
-              <option value="Travel & Adventure">Travel & Adventure</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-gray-400 mb-1">Primary Platform</label>
-            <select id="add-platform" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-              <option value="YouTube">YouTube</option>
-              <option value="Instagram">Instagram</option>
-              <option value="TikTok">TikTok</option>
-              <option value="Twitter/X">Twitter/X</option>
-              <option value="LinkedIn">LinkedIn</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-4">
-          <div>
-            <label class="block text-gray-400 mb-1">Followers Count</label>
-            <input type="number" id="add-followers" required value="150000" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-          </div>
-          <div>
-            <label class="block text-gray-400 mb-1">Engagement Rate (%)</label>
-            <input type="number" id="add-er" step="0.1" required value="5.8" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-          </div>
-          <div>
-            <label class="block text-gray-400 mb-1">Credibility Score (0-100)</label>
-            <input type="number" id="add-cred" min="50" max="100" required value="92" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-gray-400 mb-1">City</label>
-            <input type="text" id="add-city" value="San Francisco" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-          </div>
-          <div>
-            <label class="block text-gray-400 mb-1">Country</label>
-            <input type="text" id="add-country" value="USA" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-gray-400 mb-1">Bio</label>
-          <textarea id="add-bio" rows="2" placeholder="Passionate creator sharing tech & AI insights..." class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200"></textarea>
-        </div>
-
-        <div class="pt-2 flex justify-end gap-3">
-          <button type="button" onclick="closeModal('modal-add-creator')" class="py-2 px-4 rounded bg-dark-800 hover:bg-dark-700 text-gray-300">Cancel</button>
-          <button type="submit" class="py-2 px-5 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Save to MongoDB</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 4: TREND DETAIL & HOURLY PROGRESSION -->
-  <div id="modal-trend-detail" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
-      <button onclick="closeModal('modal-trend-detail')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <div id="modal-trend-content">
-        <!-- Rendered via JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: INSTAGRAM API KEY SETTINGS -->
-  <div id="modal-api-settings" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
-      <button onclick="closeModal('modal-api-settings')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <div>
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-brands fa-instagram text-pink-400"></i>
-          Instagram API & Scraper Settings
-        </h3>
-        <p class="text-xs text-gray-400 mt-1">Configure RapidAPI key or inspect active scraper fallback tier.</p>
-      </div>
-
-      <!-- Current Status Card -->
-      <div class="p-3.5 rounded-xl bg-dark-900/80 border border-white/10 space-y-2 text-xs">
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">Current Mode:</span>
-          <span id="settings-current-mode" class="font-mono text-emerald-400 font-semibold uppercase">Loading...</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-gray-400">API Key Configured:</span>
-          <span id="settings-key-status" class="font-mono text-gray-300">Loading...</span>
-        </div>
-      </div>
-
-      <form onsubmit="handleSaveApiSettings(event)" class="space-y-4 text-xs">
-        <div>
-          <label class="block text-gray-300 font-medium mb-1">RapidAPI Key (Optional for live scraper)</label>
-          <div class="relative">
-            <input type="password" id="settings-rapidapi-key" placeholder="Enter X-RapidAPI-Key (or leave blank for crawler/fallback)" class="w-full bg-dark-800 border border-white/10 rounded-lg py-2.5 pl-3 pr-10 text-gray-200 font-mono text-xs focus:outline-none focus:border-pink-500">
-            <button type="button" onclick="togglePasswordVisibility('settings-rapidapi-key')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-              <i id="eye-icon-settings" class="fa-solid fa-eye text-xs"></i>
-            </button>
-          </div>
-          <p class="text-[11px] text-gray-500 mt-1">If blank, SocialPulse automatically uses Direct Public Crawler Scraper & local synthetic fallback.</p>
-        </div>
-
-        <div class="p-3.5 rounded-xl bg-dark-950/70 border border-white/5 space-y-2 text-[11px] text-gray-400">
-          <span class="font-semibold text-gray-300 block">4-Tier Resolution Architecture:</span>
-          <p><span class="text-indigo-400 font-mono font-bold">Tier 1:</span> MongoDB Cache (24-hour TTL with instant retrieval)</p>
-          <p><span class="text-pink-400 font-mono font-bold">Tier 2:</span> RapidAPI Instagram Scraper API (when API key provided)</p>
-          <p><span class="text-emerald-400 font-mono font-bold">Tier 3:</span> Direct Public Crawler Scraper (zero API key needed)</p>
-          <p><span class="text-amber-400 font-mono font-bold">Tier 4:</span> Synthetic Benchmark Database (never breaks presentation)</p>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" onclick="closeModal('modal-api-settings')" class="py-2 px-4 rounded-lg bg-dark-800 hover:bg-dark-700 text-gray-300">Cancel</button>
-          <button type="submit" class="py-2 px-5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-pink-600/20">Save Configuration</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- TOAST CONTAINER -->
-
-  <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 select-none"></div>
-
-  <!-- APPLICATION SCRIPTS -->
-  <script src="/js/charts.js"></script>
-  <script src="/js/adbms_lab.js"></script>
-  <script src="/js/app.js"></script>
-</body>
-</html>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>SocialPulse | ADBMS Social Media Analytics Platform</title>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Leaflet Maps CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            dark: {
+              950: '#070b13',
+              900: '#0b0f19',
+              800: '#111827',
+              700: '#1f2937',
+              600: '#374151'
+            },
+            brand: {
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <!-- Chart.js & Leaflet JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-[#0b0f19] text-gray-100 min-h-screen flex antialiased">
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="w-64 bg-dark-900 border-r border-white/5 flex flex-col justify-between shrink-0 h-screen sticky top-0 z-30 select-none">
+    <div>
+      <!-- Brand Logo -->
+      <div class="p-5 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <i class="fa-solid fa-wave-pulse text-white text-lg"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-indigo-300 bg-clip-text text-transparent">SocialPulse</h1>
+            <p class="text-[10px] text-indigo-400 font-mono tracking-wider font-semibold">ADBMS • MONGODB</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="p-3 space-y-1.5 text-sm font-medium">
+        <button onclick="switchView('overview')" id="nav-overview" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all glass-nav-active">
+          <i class="fa-solid fa-chart-pie w-5 text-center text-base"></i>
+          <span>Overview Dashboard</span>
+        </button>
+
+        <button onclick="switchView('influencers')" id="nav-influencers" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <i class="fa-solid fa-users w-5 text-center text-base"></i>
+          <span>Influencer Discovery</span>
+        </button>
+
+        <button onclick="switchView('instagram')" id="nav-instagram" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <i class="fa-brands fa-instagram w-5 text-center text-base text-pink-400"></i>
+          <div class="flex items-center justify-between flex-1">
+            <span>Live IG Search</span>
+            <span class="badge-live text-[9px] px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-500/20 to-purple-500/20 text-pink-300 border border-pink-500/30 font-mono font-bold">LIVE</span>
+          </div>
+        </button>
+
+
+        <button onclick="switchView('trends')" id="nav-trends" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <i class="fa-solid fa-bolt w-5 text-center text-base"></i>
+          <span>Trend Radar</span>
+        </button>
+
+        <button onclick="switchView('campaigns')" id="nav-campaigns" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <i class="fa-solid fa-bullhorn w-5 text-center text-base"></i>
+          <span>Campaigns & ACID Lab</span>
+        </button>
+
+        <button onclick="switchView('geo')" id="nav-geo" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+          <i class="fa-solid fa-earth-americas w-5 text-center text-base"></i>
+          <span>Geospatial Heatmap</span>
+        </button>
+
+        <div class="pt-2 pb-1">
+          <div class="h-px bg-white/5 my-1"></div>
+          <span class="px-4 text-[11px] font-semibold tracking-wider uppercase text-gray-500 font-mono">ADBMS Engine</span>
+        </div>
+
+        <button onclick="switchView('adbms-lab')" id="nav-adbms-lab" class="w-full flex items-center gap-3.5 px-4 py-3 rounded-lg text-indigo-300 hover:text-white hover:bg-indigo-600/20 transition-all border border-indigo-500/20 bg-indigo-950/20">
+          <i class="fa-solid fa-flask-vial w-5 text-center text-base text-indigo-400"></i>
+          <span class="font-semibold">ADBMS Lab & Explain</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Bottom Status & Actions -->
+    <div class="p-4 border-t border-white/5 space-y-3">
+      <div class="p-3 rounded-xl bg-dark-800/80 border border-white/5 text-xs space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Database Engine</span>
+          <span class="inline-flex items-center gap-1.5 text-emerald-400 font-medium font-mono text-[11px]">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-emerald"></span>
+            MongoDB 7.x
+          </span>
+        </div>
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="text-gray-500 font-mono">Host:</span>
+          <span class="text-gray-300 font-mono">localhost:27017</span>
+        </div>
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="text-gray-500 font-mono">DB:</span>
+          <span class="text-indigo-400 font-mono font-semibold">socialpulse_analytics_db</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="triggerReseed()" id="btn-reseed" title="Reset & Re-populate MongoDB with synthetic benchmark data" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-200 border border-white/10 flex items-center justify-center gap-2 transition-all">
+          <i class="fa-solid fa-arrows-rotate text-gray-400"></i>
+          <span>Reseed DB</span>
+        </button>
+        <a href="/docs" target="_blank" title="Open FastAPI Interactive OpenAPI Docs" class="py-2 px-3 rounded-lg text-xs font-semibold bg-indigo-950/50 hover:bg-indigo-900/50 text-indigo-300 border border-indigo-500/30 flex items-center justify-center gap-1.5 transition-all">
+          <i class="fa-solid fa-book text-xs"></i>
+          <span>Swagger</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEWPORT -->
+  <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+    
+    <!-- TOP BAR -->
+    <header class="h-16 bg-dark-900/80 backdrop-blur-md border-b border-white/5 px-8 flex items-center justify-between sticky top-0 z-20">
+      <div class="flex items-center gap-4">
+        <h2 id="topbar-title" class="text-lg font-bold text-white tracking-tight">Overview Dashboard</h2>
+        <span class="text-gray-600">|</span>
+        <span id="topbar-subtitle" class="text-xs text-gray-400 font-medium">Aggregated platform analytics & real-time KPIs</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Global Search -->
+        <div class="relative w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+          <input type="text" id="global-search-input" placeholder="Search creators, hashtags..." class="w-full bg-dark-800 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
+        </div>
+
+        <!-- Refresh Button -->
+        <button onclick="refreshActiveView()" title="Refresh view data" class="w-8 h-8 rounded-lg bg-dark-800 hover:bg-gray-700 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all text-xs">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+
+        <!-- Instagram API Key Settings Button -->
+        <button onclick="openApiSettingsModal()" title="Configure Instagram API Key" class="h-8 px-2.5 rounded-lg bg-dark-800 hover:bg-gray-700 border border-white/10 flex items-center gap-1.5 text-xs text-gray-300 hover:text-white transition-all">
+          <i class="fa-solid fa-key text-amber-400 text-xs"></i>
+          <span class="hidden md:inline font-mono text-[11px]">API Key</span>
+        </button>
+
+
+        <!-- User Profile Pill -->
+        <div class="flex items-center gap-2 pl-2 border-l border-white/5 text-xs">
+          <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-[10px]">
+            DB
+          </div>
+          <span class="text-gray-300 font-medium">ADBMS Examiner</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT CONTAINER -->
+    <main class="flex-1 p-8 space-y-8 max-w-7xl w-full mx-auto">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: OVERVIEW DASHBOARD                 -->
+      <!-- ========================================== -->
+      <section id="view-overview" class="view-panel space-y-8 fade-in">
+        
+        <!-- Hero KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- KPI 1: Creators -->
+          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Creators Tracked</span>
+              <div class="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                <i class="fa-solid fa-users text-sm"></i>
+              </div>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="kpi-creators" class="text-3xl font-extrabold text-white font-mono">--</span>
+              <span class="text-xs text-emerald-400 font-medium"><i class="fa-solid fa-arrow-trend-up"></i> +12% MoM</span>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">Multi-platform creator profiles</p>
+          </div>
+
+          <!-- KPI 2: Posts -->
+          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Posts Analyzed</span>
+              <div class="w-9 h-9 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                <i class="fa-solid fa-share-nodes text-sm"></i>
+              </div>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="kpi-posts" class="text-3xl font-extrabold text-white font-mono">--</span>
+              <span class="text-xs text-cyan-400 font-medium">B-Tree indexed</span>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">Full-text & multikey hashtags indexed</p>
+          </div>
+
+          <!-- KPI 3: Avg Engagement Rate -->
+          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Avg Engagement Rate</span>
+              <div class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                <i class="fa-solid fa-chart-line text-sm"></i>
+              </div>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="kpi-er" class="text-3xl font-extrabold text-white font-mono">--%</span>
+              <span class="text-xs text-purple-400 font-medium">Aggregated</span>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">$avg pipeline across all creators</p>
+          </div>
+
+          <!-- KPI 4: Audience Reach -->
+          <div class="glass-panel p-5 glass-panel-hover relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Network Reach</span>
+              <div class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <i class="fa-solid fa-bullseye text-sm"></i>
+              </div>
+            </div>
+            <div class="mt-4 flex items-baseline gap-2">
+              <span id="kpi-reach" class="text-3xl font-extrabold text-white font-mono">--</span>
+              <span class="text-xs text-emerald-400 font-medium">Combined</span>
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1">Cumulative audience follower network</p>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Trend Velocity Bar Chart -->
+          <div class="lg:col-span-2 glass-panel p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-white text-base">Trending Hashtag Velocity Index</h3>
+                <p class="text-xs text-gray-400">Real-time velocity score calculated via MongoDB compound indexes</p>
+              </div>
+              <span class="text-xs font-mono px-2 py-1 bg-indigo-950/60 text-indigo-400 border border-indigo-500/30 rounded">Surging Topics</span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="chart-trend-velocity"></canvas>
+            </div>
+          </div>
+
+          <!-- Platform Distribution Doughnut -->
+          <div class="glass-panel p-6 space-y-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-white text-base">Platform Distribution</h3>
+                <p class="text-xs text-gray-400">$group by primary platform</p>
+              </div>
+            </div>
+            <div class="h-56 relative flex items-center justify-center">
+              <canvas id="chart-platform-dist"></canvas>
+            </div>
+            <div id="platform-legend-container" class="grid grid-cols-2 gap-2 text-xs text-gray-400 pt-2 border-t border-white/5">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Row: Niche Breakdown & Top Viral Posts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Niche Distribution Table -->
+          <div class="glass-panel p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-white text-base">Creator Niche Aggregation</h3>
+                <p class="text-xs text-gray-400">Pipeline: $group by niche with $avg engagement rate</p>
+              </div>
+              <span class="text-xs text-gray-400 font-mono">7 Niches</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-white/10 text-gray-400 uppercase text-[10px] tracking-wider">
+                    <th class="py-2.5">Niche Category</th>
+                    <th class="py-2.5">Creators</th>
+                    <th class="py-2.5">Avg Engagement</th>
+                    <th class="py-2.5 text-right">Share</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-niche-tbody" class="divide-y divide-white/5">
+                  <!-- Populated by JS -->
+                  <tr><td colspan="4" class="py-4 text-center text-gray-500">Loading niche aggregation...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Top Viral Posts -->
+          <div class="glass-panel p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-bold text-white text-base">Top Viral Content</h3>
+                <p class="text-xs text-gray-400">Ranked by compound index on metrics.viral_score DESC</p>
+              </div>
+              <span class="text-xs px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono">Top 5</span>
+            </div>
+            <div id="overview-top-posts" class="space-y-3">
+              <!-- Populated by JS -->
+              <p class="text-xs text-gray-500 text-center py-6">Loading viral posts...</p>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: INFLUENCER DISCOVERY               -->
+      <!-- ========================================== -->
+      <section id="view-influencers" class="view-panel space-y-6 hidden">
+        
+        <!-- Controls & Filters Toolbar -->
+        <div class="glass-panel p-5 space-y-4">
+          <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+            <!-- Search Input -->
+            <div class="relative w-full lg:w-96">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+              <input type="text" id="inf-search" oninput="debounceFilterInfluencers()" placeholder="Search by name, handle (@...), or bio keyword..." class="w-full bg-dark-800 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-all">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3 w-full lg:w-auto justify-end">
+              <button onclick="switchView('instagram')" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white flex items-center gap-1.5 shadow-lg shadow-pink-600/20 transition-all">
+                <i class="fa-brands fa-instagram text-xs"></i>
+                <span>Live IG Lookup</span>
+              </button>
+              <button onclick="openAddCreatorModal()" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>Add Creator</span>
+              </button>
+
+              <button onclick="launchComparisonModal()" id="btn-compare-action" class="py-2 px-3.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-white/10 flex items-center gap-2 transition-all opacity-50 cursor-not-allowed" disabled>
+                <i class="fa-solid fa-scale-balanced text-xs"></i>
+                <span>Compare (<span id="compare-count">0</span>)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dropdown & Slider Filters -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-3 border-t border-white/5 text-xs">
+            <!-- Niche Filter -->
+            <div>
+              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Niche</label>
+              <select id="filter-niche" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
+                <option value="All">All Niches</option>
+                <option value="Tech & AI">Tech & AI</option>
+                <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
+                <option value="Gaming & Esports">Gaming & Esports</option>
+                <option value="Health & Fitness">Health & Fitness</option>
+                <option value="Finance & Crypto">Finance & Crypto</option>
+                <option value="Food & Culinary">Food & Culinary</option>
+                <option value="Travel & Adventure">Travel & Adventure</option>
+              </select>
+            </div>
+
+            <!-- Platform Filter -->
+            <div>
+              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Platform</label>
+              <select id="filter-platform" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
+                <option value="All">All Platforms</option>
+                <option value="Instagram">Instagram</option>
+                <option value="YouTube">YouTube</option>
+                <option value="TikTok">TikTok</option>
+                <option value="Twitter/X">Twitter/X</option>
+                <option value="LinkedIn">LinkedIn</option>
+              </select>
+            </div>
+
+            <!-- Tier Filter -->
+            <div>
+              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Tier</label>
+              <select id="filter-tier" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
+                <option value="All">All Tiers</option>
+                <option value="Mega (1M+)">Mega (1M+)</option>
+                <option value="Macro (500K-1M)">Macro (500K-1M)</option>
+                <option value="Mid-Tier (100K-500K)">Mid-Tier (100K-500K)</option>
+                <option value="Micro (10K-100K)">Micro (10K-100K)</option>
+                <option value="Nano (1K-10K)">Nano (1K-10K)</option>
+              </select>
+            </div>
+
+            <!-- Min ER -->
+            <div>
+              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Min ER %</label>
+              <input type="number" id="filter-min-er" step="0.5" min="0" max="20" placeholder="e.g. 5.0" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <!-- Min Credibility -->
+            <div>
+              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Min Credibility</label>
+              <input type="number" id="filter-min-cred" min="0" max="100" placeholder="e.g. 90" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
+            </div>
+
+            <!-- Sort By -->
+            <div>
+              <label class="block text-gray-400 text-[11px] mb-1 font-medium">Sort By</label>
+              <select id="filter-sort-by" onchange="loadInfluencers()" class="w-full bg-dark-800 border border-white/10 rounded-md py-1.5 px-2 text-gray-200 focus:outline-none focus:border-indigo-500">
+                <option value="metrics.followers_count">Followers (Desc)</option>
+                <option value="metrics.engagement_rate">Engagement Rate (Desc)</option>
+                <option value="metrics.credibility_score">Credibility (Desc)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result Stats Bar -->
+        <div class="flex items-center justify-between text-xs text-gray-400 px-1">
+          <span>Found <strong id="influencer-total-count" class="text-white font-mono">0</strong> creators matching compound index query</span>
+          <span class="text-[11px] font-mono text-indigo-400">Index: { niche: 1, 'metrics.followers_count': -1 }</span>
+        </div>
+
+        <!-- Influencers Grid -->
+        <div id="influencer-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated by JS -->
+          <div class="col-span-full py-12 text-center text-gray-500">Loading creators...</div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW: LIVE INSTAGRAM CREATOR LOOKUP        -->
+      <!-- ========================================== -->
+      <section id="view-instagram" class="view-panel space-y-6 hidden">
+
+        <!-- Hero Search Panel -->
+        <div class="glass-panel p-6 space-y-4 border border-pink-500/20 bg-gradient-to-b from-dark-900/90 to-dark-900/40">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-600 via-rose-600 to-purple-600 flex items-center justify-center text-white text-lg shadow-lg shadow-pink-600/30">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  Live Instagram Creator Lookup
+                  <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">Real-World Metrics</span>
+                </h3>
+                <p class="text-xs text-gray-400">Fetch live Instagram metrics, compute exact Engagement Rates, and persist to MongoDB cache.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openApiSettingsModal()" class="py-1.5 px-3 rounded-lg text-xs bg-dark-800 hover:bg-dark-700 border border-white/10 text-gray-300 flex items-center gap-1.5 transition-all">
+                <i class="fa-solid fa-gear text-xs text-gray-400"></i>
+                <span>API Settings</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search Input Bar -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <div class="relative flex-1">
+              <i class="fa-brands fa-instagram absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-400 text-base"></i>
+              <input type="text" id="ig-search-input" placeholder="Enter Instagram username (e.g. cristiano, therock, zuck, leomessi)..." class="w-full bg-dark-950/80 border border-white/15 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-all font-mono">
+            </div>
+            <button onclick="handleInstagramSearch()" id="ig-search-btn" class="py-3 px-6 rounded-xl text-sm font-semibold bg-gradient-to-r from-pink-600 via-rose-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white flex items-center justify-center gap-2 shadow-lg shadow-pink-600/25 transition-all shrink-0">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span>Search Live</span>
+            </button>
+          </div>
+
+          <!-- 5 One-Click Demo Chips -->
+          <div class="flex flex-wrap items-center gap-2 text-xs text-gray-400 pt-1">
+            <span class="text-[11px] font-mono text-gray-500">Popular Demos:</span>
+            <button onclick="fillAndSearchIg('cristiano')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@cristiano</button>
+            <button onclick="fillAndSearchIg('therock')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@therock</button>
+            <button onclick="fillAndSearchIg('zuck')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@zuck</button>
+            <button onclick="fillAndSearchIg('leomessi')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@leomessi</button>
+            <button onclick="fillAndSearchIg('mkbhd')" class="px-2.5 py-1 rounded-lg bg-dark-800/80 hover:bg-dark-700 border border-white/10 text-gray-300 font-mono text-[11px] transition-all hover:text-white hover:border-pink-500/40">@mkbhd</button>
+          </div>
+        </div>
+
+        <!-- Initial Blank State / Instructions -->
+        <div id="ig-initial-state" class="glass-panel p-12 text-center space-y-3 border border-dashed border-white/10">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-dark-800/80 border border-white/10 flex items-center justify-center text-pink-400 text-2xl">
+            <i class="fa-brands fa-instagram"></i>
+          </div>
+          <h4 class="text-sm font-semibold text-white">No Instagram Profile Loaded Yet</h4>
+          <p class="text-xs text-gray-400 max-w-md mx-auto">Enter an Instagram username above or choose a demo suggestion to fetch live metrics, calculate engagement rate, and test MongoDB upsert caching.</p>
+        </div>
+
+        <!-- Loading Skeleton State -->
+        <div id="ig-loading-skeleton" class="glass-panel p-6 space-y-6 hidden border border-pink-500/20">
+          <div class="flex items-center gap-4">
+            <div class="w-20 h-20 rounded-full skeleton-shimmer shrink-0"></div>
+            <div class="space-y-2 flex-1">
+              <div class="h-6 w-48 skeleton-shimmer"></div>
+              <div class="h-4 w-32 skeleton-shimmer"></div>
+              <div class="h-3 w-64 skeleton-shimmer"></div>
+            </div>
+            <div class="h-8 w-28 skeleton-shimmer rounded-full"></div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="h-20 skeleton-shimmer rounded-xl"></div>
+            <div class="h-20 skeleton-shimmer rounded-xl"></div>
+            <div class="h-20 skeleton-shimmer rounded-xl"></div>
+          </div>
+          <div class="h-28 skeleton-shimmer rounded-xl"></div>
+          <div class="space-y-3">
+            <div class="h-4 w-36 skeleton-shimmer"></div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+              <div class="h-28 skeleton-shimmer rounded-lg"></div>
+            </div>
+          </div>
+          <div class="text-center text-xs text-pink-400 font-mono animate-pulse pt-2 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span id="ig-skeleton-status">Querying Instagram multi-tier scraper & computing engagement rate...</span>
+          </div>
+        </div>
+
+        <!-- Rich Profile Card Container -->
+        <div id="ig-profile-card" class="space-y-6 hidden">
+          <!-- Rendered dynamically by renderInstagramProfileCard(data) -->
+        </div>
+
+        <!-- Graceful Error / Fallback State -->
+        <div id="ig-error-fallback" class="glass-panel p-8 border border-amber-500/30 bg-amber-950/20 text-center space-y-4 hidden">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="space-y-1">
+            <h4 class="text-base font-bold text-white">Instagram Profile Lookup Notice</h4>
+            <p id="ig-error-message" class="text-xs text-amber-200/80 max-w-lg mx-auto">Unable to reach Instagram API or creator account not found.</p>
+          </div>
+          <div class="p-3 max-w-md mx-auto rounded-lg bg-dark-900/60 border border-white/5 text-[11px] text-gray-400">
+            <strong>Why did this happen?</strong> Instagram public lookup APIs may encounter rate limits, private accounts, or network timeouts. The platform maintains full local synthetic data continuity.
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <button id="btn-ig-fallback-synthetic" onclick="fallbackToSynthetic()" class="py-2.5 px-5 rounded-xl text-xs font-semibold bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 text-white flex items-center gap-2 shadow-lg shadow-amber-600/20 transition-all">
+              <i class="fa-solid fa-database"></i>
+              <span id="ig-fallback-btn-text">Search Local Synthetic Database</span>
+            </button>
+            <button onclick="openApiSettingsModal()" class="py-2.5 px-4 rounded-xl text-xs font-semibold bg-dark-800 hover:bg-dark-700 text-gray-300 border border-white/10 flex items-center gap-2 transition-all">
+              <i class="fa-solid fa-sliders text-xs text-amber-400"></i>
+              <span>Configure API Key</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: TREND RADAR                        -->
+      <!-- ========================================== -->
+      <section id="view-trends" class="view-panel space-y-6 hidden">
+
+        
+        <!-- Header & Category Filters -->
+        <div class="glass-panel p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-white text-base">Viral Velocity Radar</h3>
+              <p class="text-xs text-gray-400">Tracking hashtag surge rates, sentiment distributions, and platform breakouts</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-400">Sort by:</span>
+              <select id="trend-sort" onchange="loadTrends()" class="bg-dark-800 border border-white/10 rounded-md py-1 px-2.5 text-xs text-gray-200 focus:outline-none">
+                <option value="velocity_score">Velocity Score</option>
+                <option value="viral_index">Viral Index</option>
+                <option value="volume_24h">24h Volume</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Category Pills -->
+          <div id="trend-category-pills" class="flex flex-wrap gap-2 pt-2 border-t border-white/5 text-xs">
+            <button onclick="filterTrendCategory('All')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition-all">All Categories</button>
+            <button onclick="filterTrendCategory('Tech & AI')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Tech & AI</button>
+            <button onclick="filterTrendCategory('Fashion & Lifestyle')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Fashion & Lifestyle</button>
+            <button onclick="filterTrendCategory('Gaming & Esports')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Gaming & Esports</button>
+            <button onclick="filterTrendCategory('Health & Fitness')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Health & Fitness</button>
+            <button onclick="filterTrendCategory('Finance & Crypto')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Finance & Crypto</button>
+            <button onclick="filterTrendCategory('Food & Culinary')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Food & Culinary</button>
+            <button onclick="filterTrendCategory('Travel & Adventure')" class="trend-cat-btn px-3 py-1.5 rounded-lg bg-dark-800 text-gray-300 hover:bg-dark-700 transition-all">Travel & Adventure</button>
+          </div>
+        </div>
+
+        <!-- Trends Grid -->
+        <div id="trends-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated by JS -->
+          <div class="col-span-full py-12 text-center text-gray-500">Loading trending topics...</div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 4: CAMPAIGNS & ACID TRANSACTIONS      -->
+      <!-- ========================================== -->
+      <section id="view-campaigns" class="view-panel space-y-8 hidden">
+        
+        <!-- Header Info -->
+        <div class="glass-panel p-6 border-l-4 border-indigo-500">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-white">Brand Campaign Management & ACID Transactions</h3>
+              <p class="text-xs text-gray-400 mt-1">Multi-document transaction demonstration with commit and atomic rollback simulation</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-mono px-3 py-1.5 rounded-lg bg-dark-800 border border-white/10 text-indigo-400">
+                <i class="fa-solid fa-shield-halved mr-1"></i> ACID Guarantee: Atomicity & Isolation
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand Campaigns List -->
+        <div class="space-y-4">
+          <h4 class="text-sm font-semibold text-gray-300 uppercase tracking-wider font-mono">Active Campaigns</h4>
+          <div id="campaigns-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Populated by JS -->
+            <p class="text-xs text-gray-500">Loading campaigns...</p>
+          </div>
+        </div>
+
+        <!-- Campaign Creator Matchmaker Tool -->
+        <div class="glass-panel p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-white text-base">Intelligent Creator Matchmaker</h4>
+              <p class="text-xs text-gray-400">Filter creators fitting budget constraints and high credibility metrics</p>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded bg-indigo-950 text-indigo-400 border border-indigo-500/30 font-mono">MongoDB Algorithmic Match</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs pt-2">
+            <div>
+              <label class="block text-gray-400 mb-1">Target Niche</label>
+              <select id="match-niche" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
+                <option value="Tech & AI">Tech & AI</option>
+                <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
+                <option value="Gaming & Esports">Gaming & Esports</option>
+                <option value="Health & Fitness">Health & Fitness</option>
+                <option value="Finance & Crypto">Finance & Crypto</option>
+                <option value="Food & Culinary">Food & Culinary</option>
+                <option value="Travel & Adventure">Travel & Adventure</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Max Budget per Creator ($)</label>
+              <input type="number" id="match-budget" value="15000" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Min Credibility Score</label>
+              <input type="number" id="match-cred" value="90" min="0" max="100" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
+            </div>
+            <div class="flex items-end">
+              <button onclick="runMatchmaker()" class="w-full py-2 px-4 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center justify-center gap-2 transition-all">
+                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                <span>Find Matches</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Matchmaker Results Container -->
+          <div id="matchmaker-results" class="pt-4 divide-y divide-white/5 space-y-2">
+            <p class="text-xs text-gray-500 italic">Select criteria and click "Find Matches" to see recommended creators.</p>
+          </div>
+        </div>
+
+        <!-- ACID Multi-Document Transaction Interactive Lab -->
+        <div class="glass-panel p-6 border border-indigo-500/30 space-y-5 bg-gradient-to-br from-dark-900 to-indigo-950/20">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/40 flex items-center justify-center">
+                <i class="fa-solid fa-microchip"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-base">ACID Transaction Execution Sandbox</h4>
+                <p class="text-xs text-gray-400">Test atomic budget allocation vs intentional aborted rollback</p>
+              </div>
+            </div>
+            <span class="text-xs font-mono px-2.5 py-1 bg-dark-800 border border-white/10 text-emerald-400">
+              `session.start_transaction()`
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-2">
+            <div>
+              <label class="block text-gray-400 mb-1">Target Campaign</label>
+              <select id="tx-campaign-select" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Influencer Handle</label>
+              <input type="text" id="tx-handle" value="@elena_ai_tech" placeholder="@handle" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200 font-mono">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Allocation Fee ($)</label>
+              <input type="number" id="tx-fee" value="5000" class="w-full bg-dark-800 border border-white/10 rounded-md py-2 px-3 text-gray-200 font-mono">
+            </div>
+          </div>
+
+          <!-- Transaction Trigger Buttons -->
+          <div class="flex flex-col sm:flex-row items-center gap-4 pt-2">
+            <button onclick="executeTransaction(false)" class="flex-1 py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all">
+              <i class="fa-solid fa-check text-xs"></i>
+              <span>Execute & Commit Transaction</span>
+            </button>
+            <button onclick="executeTransaction(true)" class="flex-1 py-2.5 px-4 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 transition-all">
+              <i class="fa-solid fa-ban text-xs"></i>
+              <span>Simulate Abort / Rollback</span>
+            </button>
+          </div>
+
+          <!-- Transaction Result Terminal -->
+          <div class="mt-4">
+            <div class="flex items-center justify-between text-[11px] text-gray-400 font-mono px-2 py-1 bg-dark-950 border-t border-l border-r border-white/10 rounded-t">
+              <span>TRANSACTION OUTPUT LOG</span>
+              <span id="tx-status-badge" class="text-gray-500">READY</span>
+            </div>
+            <pre id="tx-terminal-output" class="code-box p-4 text-gray-300 overflow-x-auto rounded-t-none max-h-48 text-xs font-mono">// Ready to run transaction. Click 'Commit' or 'Simulate Rollback' above.</pre>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 5: GEOSPATIAL HEATMAP                 -->
+      <!-- ========================================== -->
+      <section id="view-geo" class="view-panel space-y-6 hidden">
+        
+        <!-- Header & Hub Selector -->
+        <div class="glass-panel p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-white text-base">Geospatial Analytics & $geoNear Aggregation</h3>
+              <p class="text-xs text-gray-400">Spherical distance queries powered by MongoDB 2dsphere indexes</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="openCartoKeyModal()" class="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-indigo-500/40 hover:border-amber-400/60 flex items-center gap-2 text-xs font-mono transition-all shadow-sm">
+                <i class="fa-solid fa-key text-amber-400"></i>
+                <span>Map API Key</span>
+                <span id="carto-key-indicator" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              </button>
+              <span class="text-xs px-2.5 py-1 rounded bg-indigo-950 text-indigo-400 border border-indigo-500/30 font-mono">2dsphere Index: { location: "2dsphere" }</span>
+            </div>
+          </div>
+
+          <!-- Quick City Hub Buttons -->
+          <div>
+            <span class="text-[11px] text-gray-400 uppercase font-semibold tracking-wider font-mono block mb-2">Global Tech & Creator Hubs:</span>
+            <div id="geo-hub-buttons" class="flex flex-wrap gap-2 text-xs">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Radius & Coordinates Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs pt-2 border-t border-white/5">
+            <div>
+              <label class="block text-gray-400 mb-1">Center Longitude</label>
+              <input type="number" id="geo-lng" step="0.0001" value="-122.4194" class="w-full bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-gray-200 font-mono">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Center Latitude</label>
+              <input type="number" id="geo-lat" step="0.0001" value="37.7749" class="w-full bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-gray-200 font-mono">
+            </div>
+            <div>
+              <label class="block text-gray-400 mb-1">Max Distance: <span id="geo-radius-val" class="text-indigo-400 font-bold">500</span> km</label>
+              <input type="range" id="geo-radius" min="50" max="2500" step="50" value="500" oninput="document.getElementById('geo-radius-val').innerText = this.value" class="w-full accent-indigo-500">
+            </div>
+            <div class="flex items-end">
+              <button onclick="runGeoNearQuery()" class="w-full py-2 px-4 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold flex items-center justify-center gap-2 transition-all">
+                <i class="fa-solid fa-location-crosshairs text-xs"></i>
+                <span>Query $geoNear</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map & Results Side-by-Side -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Leaflet Map Container -->
+          <div class="lg:col-span-2 glass-panel p-2 overflow-hidden h-[500px] relative rounded-xl border border-white/10 group">
+            <!-- Floating Map Key Quick Button -->
+            <button onclick="openCartoKeyModal()" title="Configure CARTO Map API Key" class="absolute top-4 right-4 z-[500] bg-dark-950/85 hover:bg-dark-900 text-gray-200 hover:text-white border border-white/15 hover:border-amber-400/60 backdrop-blur-md px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-2 shadow-xl transition-all">
+              <i class="fa-solid fa-key text-amber-400"></i>
+              <span id="map-key-btn-text">CARTO Key</span>
+            </button>
+            <div id="geo-map" class="w-full h-full rounded-lg"></div>
+          </div>
+
+          <!-- Nearby Posts Sidebar -->
+          <div class="glass-panel p-5 space-y-4 h-[500px] flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                <h4 class="font-bold text-white text-sm">Nearby Posts Found</h4>
+                <span id="geo-posts-count" class="text-xs px-2 py-0.5 rounded bg-dark-800 text-indigo-400 font-mono">0 posts</span>
+              </div>
+              <div id="geo-posts-list" class="divide-y divide-white/5 overflow-y-auto max-h-[400px] pr-1 space-y-2 mt-2">
+                <p class="text-xs text-gray-500 text-center py-12">Click a city hub above or hit 'Query $geoNear' to find local social posts.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 6: ADBMS ARCHITECTURE & EXPLAIN LAB   -->
+      <!-- ========================================== -->
+      <section id="view-adbms-lab" class="view-panel space-y-6 hidden">
+        
+        <!-- Lab Header -->
+        <div class="glass-panel p-6 border-l-4 border-indigo-500">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-white">ADBMS Aggregation & Performance Benchmark Lab</h3>
+              <p class="text-xs text-gray-400 mt-1">Live query plan executionStats, recursive graph traversal, and indexing benchmarks</p>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="px-3 py-1 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30">Explain: IXSCAN vs COLLSCAN</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subtabs Navigation -->
+        <div class="flex border-b border-white/10 space-x-2 text-xs font-medium">
+          <button onclick="switchLabTab('explain')" id="labtab-explain" class="py-2.5 px-4 rounded-t-lg bg-indigo-600/20 text-indigo-300 border-b-2 border-indigo-500 font-semibold transition-all">
+            <i class="fa-solid fa-gauge-high mr-1.5"></i> Explain Plan Benchmark
+          </button>
+          <button onclick="switchLabTab('pipelines')" id="labtab-pipelines" class="py-2.5 px-4 rounded-t-lg text-gray-400 hover:text-white transition-all">
+            <i class="fa-solid fa-diagram-project mr-1.5"></i> Aggregation Pipelines ($bucket, $facet, $lookup)
+          </button>
+          <button onclick="switchLabTab('graph')" id="labtab-graph" class="py-2.5 px-4 rounded-t-lg text-gray-400 hover:text-white transition-all">
+            <i class="fa-solid fa-circle-nodes mr-1.5"></i> Social Graph ($graphLookup)
+          </button>
+          <button onclick="switchLabTab('storage')" id="labtab-storage" class="py-2.5 px-4 rounded-t-lg text-gray-400 hover:text-white transition-all">
+            <i class="fa-solid fa-hard-drive mr-1.5"></i> Database & Index Inspector
+          </button>
+        </div>
+
+        <!-- LAB TAB 1: EXPLAIN PLAN BENCHMARK -->
+        <div id="lab-tab-explain" class="space-y-6">
+          
+          <!-- Explain Plan Controls -->
+          <div class="glass-panel p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 class="font-bold text-white text-sm">Real-time MongoDB executionStats Comparison</h4>
+                <p class="text-xs text-gray-400">Compare indexed query (IXSCAN) vs forced collection scan (COLLSCAN via $natural hint)</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <select id="explain-platform" class="bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-xs text-gray-200">
+                  <option value="YouTube">YouTube</option>
+                  <option value="Instagram">Instagram</option>
+                  <option value="TikTok">TikTok</option>
+                  <option value="Twitter/X">Twitter/X</option>
+                </select>
+                <input type="number" id="explain-min-likes" value="40000" placeholder="Min likes" class="w-28 bg-dark-800 border border-white/10 rounded py-1.5 px-2 text-xs text-gray-200">
+                <button onclick="runExplainBenchmark()" class="py-1.5 px-4 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-all shadow-md">
+                  <i class="fa-solid fa-bolt text-xs"></i>
+                  <span>Run Benchmark</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Benchmark Side-by-Side Comparison -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Indexed Card -->
+            <div class="glass-panel p-6 border border-emerald-500/30 space-y-4 relative overflow-hidden bg-gradient-to-br from-dark-900 to-emerald-950/10">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-check-double"></i> INDEXED EXECUTION
+                </span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">IXSCAN</span>
+              </div>
+              
+              <div class="text-xs text-gray-400 font-mono">
+                Index: <strong class="text-white">idx_platform_likes_date_compound</strong>
+              </div>
+
+              <div class="grid grid-cols-3 gap-3 pt-2">
+                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
+                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Docs Examined</span>
+                  <span id="bench-idx-docs" class="text-xl font-bold font-mono text-emerald-400">--</span>
+                </div>
+                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
+                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Keys Examined</span>
+                  <span id="bench-idx-keys" class="text-xl font-bold font-mono text-white">--</span>
+                </div>
+                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
+                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Time (ms)</span>
+                  <span id="bench-idx-time" class="text-xl font-bold font-mono text-cyan-400">--</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-300">
+                <i class="fa-solid fa-circle-check mr-1.5"></i>
+                Query jumps directly to B-Tree index pages, bypassing all irrelevant documents.
+              </div>
+            </div>
+
+            <!-- Unindexed / Collscan Card -->
+            <div class="glass-panel p-6 border border-rose-500/30 space-y-4 relative overflow-hidden bg-gradient-to-br from-dark-900 to-rose-950/10">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-triangle-exclamation"></i> UNINDEXED / NATURAL SCAN
+                </span>
+                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">COLLSCAN</span>
+              </div>
+
+              <div class="text-xs text-gray-400 font-mono">
+                Index: <strong class="text-white">None (Forced Collection Scan)</strong>
+              </div>
+
+              <div class="grid grid-cols-3 gap-3 pt-2">
+                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
+                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Docs Examined</span>
+                  <span id="bench-coll-docs" class="text-xl font-bold font-mono text-rose-400">--</span>
+                </div>
+                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
+                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Keys Examined</span>
+                  <span class="text-xl font-bold font-mono text-gray-500">0</span>
+                </div>
+                <div class="p-3 rounded-lg bg-dark-950/80 border border-white/5">
+                  <span class="text-[10px] text-gray-400 uppercase font-mono block">Time (ms)</span>
+                  <span id="bench-coll-time" class="text-xl font-bold font-mono text-rose-300">--</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-rose-950/30 border border-rose-500/20 text-xs text-rose-300">
+                <i class="fa-solid fa-circle-xmark mr-1.5"></i>
+                Forced to scan every single document in the collection (100% of collection read from disk/RAM).
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Optimization Gain Summary Banner -->
+          <div class="glass-panel p-5 bg-gradient-to-r from-indigo-950/60 to-purple-950/60 border border-indigo-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-indigo-600/30 text-indigo-400 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-gauge"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-white text-sm">ADBMS Performance Verdict</h4>
+                <p id="bench-verdict-text" class="text-xs text-gray-300 mt-0.5">Click 'Run Benchmark' to measure efficiency gain.</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] uppercase tracking-wider text-gray-400 block font-mono">Scan Reduction</span>
+              <span id="bench-reduction-pct" class="text-2xl font-black text-emerald-400 font-mono">--%</span>
+            </div>
+          </div>
+
+          <!-- Raw Explain Output Accordion -->
+          <details class="glass-panel p-4 text-xs">
+            <summary class="font-semibold text-gray-300 cursor-pointer flex items-center gap-2">
+              <i class="fa-solid fa-code text-indigo-400"></i>
+              <span>Inspect Raw MongoDB executionStats JSON Payloads</span>
+            </summary>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
+                <span class="text-emerald-400 font-mono text-[11px] block mb-1">Indexed explain()['executionStats']</span>
+                <pre id="raw-explain-idx" class="code-box p-3 text-gray-300 overflow-x-auto max-h-64 font-mono">// Awaiting benchmark</pre>
+              </div>
+              <div>
+                <span class="text-rose-400 font-mono text-[11px] block mb-1">Unindexed explain()['executionStats']</span>
+                <pre id="raw-explain-coll" class="code-box p-3 text-gray-300 overflow-x-auto max-h-64 font-mono">// Awaiting benchmark</pre>
+              </div>
+            </div>
+          </details>
+
+        </div>
+
+        <!-- LAB TAB 2: AGGREGATION PIPELINES -->
+        <div id="lab-tab-pipelines" class="space-y-6 hidden">
+          
+          <div class="glass-panel p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 class="font-bold text-white text-sm">MongoDB Aggregation Pipeline Explorer</h4>
+                <p class="text-xs text-gray-400">Run multi-stage pipelines and analyze stage transformations in real-time</p>
+              </div>
+              <div class="flex flex-wrap gap-2 text-xs">
+                <button onclick="runPipeline('bucketing')" class="pipeline-btn py-1.5 px-3 rounded bg-indigo-600 text-white font-medium" data-pipe="bucketing">Pipeline 1: $bucket</button>
+                <button onclick="runPipeline('facet')" class="pipeline-btn py-1.5 px-3 rounded bg-dark-800 text-gray-300 hover:bg-dark-700" data-pipe="facet">Pipeline 2: $facet</button>
+                <button onclick="runPipeline('lookup')" class="pipeline-btn py-1.5 px-3 rounded bg-dark-800 text-gray-300 hover:bg-dark-700" data-pipe="lookup">Pipeline 3: $lookup</button>
+                <button onclick="runPipeline('graph')" class="pipeline-btn py-1.5 px-3 rounded bg-dark-800 text-gray-300 hover:bg-dark-700" data-pipe="graph">Pipeline 4: $graphLookup</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pipeline Info & Latency Banner -->
+          <div class="glass-panel p-4 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3">
+              <i class="fa-solid fa-circle-play text-emerald-400 text-base"></i>
+              <div>
+                <span id="pipeline-title" class="font-bold text-white block">Pipeline 1: Follower Bucketing Tier Analysis ($bucket)</span>
+                <span id="pipeline-stages" class="text-gray-400 font-mono text-[11px]">Stages: $bucket, $sum, $avg, $push</span>
+              </div>
+            </div>
+            <div class="text-right font-mono">
+              <span class="text-gray-400 text-[10px] block">SERVER EXECUTION</span>
+              <span id="pipeline-latency" class="text-indigo-400 font-bold">-- ms</span>
+            </div>
+          </div>
+
+          <!-- Pipeline Code & Output Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Code Box -->
+            <div class="glass-panel p-4 space-y-2">
+              <div class="flex items-center justify-between text-xs text-gray-400 font-mono pb-2 border-b border-white/5">
+                <span>MONGODB AGGREGATION PIPELINE CODE</span>
+                <span class="text-indigo-400">PyMongo Syntax</span>
+              </div>
+              <pre id="pipeline-code-display" class="code-box p-4 text-emerald-300 overflow-x-auto max-h-96 font-mono text-xs">// Loading pipeline definition...</pre>
+            </div>
+
+            <!-- Live Output Box -->
+            <div class="glass-panel p-4 space-y-2">
+              <div class="flex items-center justify-between text-xs text-gray-400 font-mono pb-2 border-b border-white/5">
+                <span>AGGREGATION OUTPUT RESULTS</span>
+                <span class="text-cyan-400">JSON Result</span>
+              </div>
+              <pre id="pipeline-output-display" class="code-box p-4 text-cyan-200 overflow-x-auto max-h-96 font-mono text-xs">// Loading execution results...</pre>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- LAB TAB 3: SOCIAL GRAPH ($graphLookup) -->
+        <div id="lab-tab-graph" class="space-y-6 hidden">
+          
+          <div class="glass-panel p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 class="font-bold text-white text-sm">Recursive Social Graph Traversal ($graphLookup)</h4>
+                <p class="text-xs text-gray-400">Traverse multi-hop creator collaboration networks directly inside the database</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="text" id="graph-start-handle" value="@elena_ai_tech" placeholder="@handle" class="bg-dark-800 border border-white/10 rounded py-1.5 px-3 text-xs text-gray-200 font-mono">
+                <select id="graph-depth" class="bg-dark-800 border border-white/10 rounded py-1.5 px-2.5 text-xs text-gray-200">
+                  <option value="1">Depth 1 Hop</option>
+                  <option value="2" selected>Depth 2 Hops</option>
+                  <option value="3">Depth 3 Hops</option>
+                </select>
+                <button onclick="runGraphTraversal()" class="py-1.5 px-4 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-all">
+                  <i class="fa-solid fa-network-wired text-xs"></i>
+                  <span>Traverse Graph</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Node Network Display -->
+          <div class="glass-panel p-6 space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h5 class="font-bold text-white text-sm">Network Node Hierarchy</h5>
+                <p class="text-xs text-gray-400">Total Connected Creators in Cluster: <strong id="graph-network-size" class="text-indigo-400 font-mono">--</strong></p>
+              </div>
+              <span id="graph-latency" class="text-xs font-mono text-gray-400">Execution: -- ms</span>
+            </div>
+
+            <!-- Root Creator Node -->
+            <div id="graph-root-node" class="p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/40 flex items-center gap-4 max-w-md mx-auto shadow-lg shadow-indigo-600/10">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Connective Arrows -->
+            <div class="text-center text-indigo-400 text-lg">
+              <i class="fa-solid fa-angles-down animate-bounce"></i>
+            </div>
+
+            <!-- Connected Collaborators Grid -->
+            <div>
+              <span class="text-xs font-mono uppercase text-gray-400 tracking-wider block mb-3 text-center">Connected Peer Collaborators ($graphLookup Recursive Nodes)</span>
+              <div id="graph-nodes-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- LAB TAB 4: DATABASE & INDEX STORAGE INSPECTOR -->
+        <div id="lab-tab-storage" class="space-y-6 hidden">
+          <div class="glass-panel p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-bold text-white text-sm">MongoDB Schema & Index Storage Inspector</h4>
+                <p class="text-xs text-gray-400">Inspect collections, document volumes, B-Tree index specifications, and TTL expiration settings</p>
+              </div>
+              <button onclick="loadDatabaseStats()" class="py-1.5 px-3 rounded bg-dark-800 hover:bg-dark-700 text-gray-200 border border-white/10 text-xs font-medium transition-all">
+                <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Stats
+              </button>
+            </div>
+          </div>
+
+          <div id="collections-storage-list" class="space-y-4">
+            <!-- Populated by JS -->
+            <p class="text-xs text-gray-500 text-center py-12">Loading collection statistics...</p>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODALS                                     -->
+  <!-- ========================================== -->
+
+  <!-- MODAL 1: INFLUENCER PROFILE & DEMOGRAPHICS -->
+  <div id="modal-influencer-detail" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
+      <button onclick="closeModal('modal-influencer-detail')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div id="modal-detail-content">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: HEAD-TO-HEAD CREATOR COMPARISON -->
+  <div id="modal-comparison" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-5xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
+      <button onclick="closeModal('modal-comparison')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <h3 class="text-lg font-bold text-white">Head-to-Head Creator Benchmark</h3>
+        <p class="text-xs text-gray-400">Multi-metric comparative analysis between selected influencers</p>
+      </div>
+
+      <div id="modal-comparison-content">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: ADD NEW CREATOR -->
+  <div id="modal-add-creator" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
+      <button onclick="closeModal('modal-add-creator')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <h3 class="text-lg font-bold text-white">Register New Creator Document</h3>
+        <p class="text-xs text-gray-400">Inserts a document into MongoDB with unique index enforcement on handle</p>
+      </div>
+
+      <form id="form-add-creator" onsubmit="submitAddCreator(event)" class="space-y-4 text-xs">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-400 mb-1">Creator Name</label>
+            <input type="text" id="add-name" required placeholder="Elena Rostova" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+          </div>
+          <div>
+            <label class="block text-gray-400 mb-1">Handle (@...)</label>
+            <input type="text" id="add-handle" required placeholder="@elena_ai_tech" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200 font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-400 mb-1">Niche</label>
+            <select id="add-niche" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+              <option value="Tech & AI">Tech & AI</option>
+              <option value="Fashion & Lifestyle">Fashion & Lifestyle</option>
+              <option value="Gaming & Esports">Gaming & Esports</option>
+              <option value="Health & Fitness">Health & Fitness</option>
+              <option value="Finance & Crypto">Finance & Crypto</option>
+              <option value="Food & Culinary">Food & Culinary</option>
+              <option value="Travel & Adventure">Travel & Adventure</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-400 mb-1">Primary Platform</label>
+            <select id="add-platform" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+              <option value="YouTube">YouTube</option>
+              <option value="Instagram">Instagram</option>
+              <option value="TikTok">TikTok</option>
+              <option value="Twitter/X">Twitter/X</option>
+              <option value="LinkedIn">LinkedIn</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-gray-400 mb-1">Followers Count</label>
+            <input type="number" id="add-followers" required value="150000" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+          </div>
+          <div>
+            <label class="block text-gray-400 mb-1">Engagement Rate (%)</label>
+            <input type="number" id="add-er" step="0.1" required value="5.8" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+          </div>
+          <div>
+            <label class="block text-gray-400 mb-1">Credibility Score (0-100)</label>
+            <input type="number" id="add-cred" min="50" max="100" required value="92" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-400 mb-1">City</label>
+            <input type="text" id="add-city" value="San Francisco" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+          </div>
+          <div>
+            <label class="block text-gray-400 mb-1">Country</label>
+            <input type="text" id="add-country" value="USA" class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-gray-400 mb-1">Bio</label>
+          <textarea id="add-bio" rows="2" placeholder="Passionate creator sharing tech & AI insights..." class="w-full bg-dark-800 border border-white/10 rounded py-2 px-3 text-gray-200"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-3">
+          <button type="button" onclick="closeModal('modal-add-creator')" class="py-2 px-4 rounded bg-dark-800 hover:bg-dark-700 text-gray-300">Cancel</button>
+          <button type="submit" class="py-2 px-5 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Save to MongoDB</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: TREND DETAIL & HOURLY PROGRESSION -->
+  <div id="modal-trend-detail" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
+      <button onclick="closeModal('modal-trend-detail')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div id="modal-trend-content">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: INSTAGRAM API KEY SETTINGS -->
+  <div id="modal-api-settings" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
+      <button onclick="closeModal('modal-api-settings')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div>
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-brands fa-instagram text-pink-400"></i>
+          Instagram API & Scraper Settings
+        </h3>
+        <p class="text-xs text-gray-400 mt-1">Configure RapidAPI key or inspect active scraper fallback tier.</p>
+      </div>
+
+      <!-- Current Status Card -->
+      <div class="p-3.5 rounded-xl bg-dark-900/80 border border-white/10 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Current Mode:</span>
+          <span id="settings-current-mode" class="font-mono text-emerald-400 font-semibold uppercase">Loading...</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">API Key Configured:</span>
+          <span id="settings-key-status" class="font-mono text-gray-300">Loading...</span>
+        </div>
+      </div>
+
+      <form onsubmit="handleSaveApiSettings(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-gray-300 font-medium mb-1">RapidAPI Key (Optional for live scraper)</label>
+          <div class="relative">
+            <input type="password" id="settings-rapidapi-key" placeholder="Enter X-RapidAPI-Key (or leave blank for crawler/fallback)" class="w-full bg-dark-800 border border-white/10 rounded-lg py-2.5 pl-3 pr-10 text-gray-200 font-mono text-xs focus:outline-none focus:border-pink-500">
+            <button type="button" onclick="togglePasswordVisibility('settings-rapidapi-key')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+              <i id="eye-icon-settings" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+          <p class="text-[11px] text-gray-500 mt-1">If blank, SocialPulse automatically uses Direct Public Crawler Scraper & local synthetic fallback.</p>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-dark-950/70 border border-white/5 space-y-2 text-[11px] text-gray-400">
+          <span class="font-semibold text-gray-300 block">4-Tier Resolution Architecture:</span>
+          <p><span class="text-indigo-400 font-mono font-bold">Tier 1:</span> MongoDB Cache (24-hour TTL with instant retrieval)</p>
+          <p><span class="text-pink-400 font-mono font-bold">Tier 2:</span> RapidAPI Instagram Scraper API (when API key provided)</p>
+          <p><span class="text-emerald-400 font-mono font-bold">Tier 3:</span> Direct Public Crawler Scraper (zero API key needed)</p>
+          <p><span class="text-amber-400 font-mono font-bold">Tier 4:</span> Synthetic Benchmark Database (never breaks presentation)</p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal('modal-api-settings')" class="py-2 px-4 rounded-lg bg-dark-800 hover:bg-dark-700 text-gray-300">Cancel</button>
+          <button type="submit" class="py-2 px-5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-pink-600/20">Save Configuration</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL: CARTO MAP API KEY CONFIGURATION -->
+  <div id="modal-carto-key" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 relative border border-white/10 shadow-2xl">
+      <button onclick="closeModal('modal-carto-key')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div>
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-map-location-dot text-amber-400"></i>
+          CARTO Map API Key Configuration
+        </h3>
+        <p class="text-xs text-gray-400 mt-1">Configure your personal CARTO API key to authenticate DarkMatter tile layer requests.</p>
+      </div>
+
+      <!-- Current Key Info Card -->
+      <div class="p-3.5 rounded-xl bg-dark-900/80 border border-white/10 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Active Key Status:</span>
+          <span id="carto-modal-key-status" class="font-mono text-emerald-400 font-semibold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Active & Authenticated
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-400">Active Key Preview:</span>
+          <span id="carto-modal-key-preview" class="font-mono text-gray-300">cb1_4ezo...a</span>
+        </div>
+      </div>
+
+      <form onsubmit="handleSaveCartoKey(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-gray-300 font-medium mb-1">Enter / Paste CARTO API Key</label>
+          <div class="relative">
+            <input type="text" id="input-carto-api-key" placeholder="Paste your CARTO API Key (e.g. cb1_4ezo_1_...)" class="w-full bg-dark-800 border border-white/10 rounded-lg py-2.5 pl-3 pr-20 text-gray-200 font-mono text-xs focus:outline-none focus:border-amber-400">
+            <button type="button" onclick="pasteCartoKeyFromClipboard()" class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 rounded bg-dark-700 hover:bg-dark-600 text-gray-300 hover:text-white text-[11px] font-mono border border-white/10">
+              <i class="fa-regular fa-clipboard mr-1"></i>Paste
+            </button>
+          </div>
+          <p class="text-[11px] text-gray-500 mt-1">Changes are saved to browser storage and applied instantly to the live Leaflet map.</p>
+        </div>
+
+        <div class="p-3 rounded-lg bg-dark-950/70 border border-white/5 space-y-1.5 text-[11px] text-gray-400">
+          <span class="font-semibold text-gray-300 block"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>Tile Endpoint Format:</span>
+          <code class="text-[10px] text-indigo-300 font-mono block break-all bg-dark-900/60 p-1.5 rounded">
+            https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=&lt;YOUR_KEY&gt;
+          </code>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <button type="button" onclick="resetDefaultCartoKey()" class="py-2 px-3 rounded-lg bg-dark-800 hover:bg-dark-700 text-gray-400 hover:text-amber-400 border border-white/5 transition-all text-xs font-mono">
+            <i class="fa-solid fa-rotate-left mr-1"></i>Reset to Default
+          </button>
+          <div class="flex gap-2">
+            <button type="button" onclick="closeModal('modal-carto-key')" class="py-2 px-4 rounded-lg bg-dark-800 hover:bg-dark-700 text-gray-300">Cancel</button>
+            <button type="submit" class="py-2 px-5 rounded-lg bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20">Save & Apply</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 select-none"></div>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="/js/charts.js"></script>
+  <script src="/js/adbms_lab.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

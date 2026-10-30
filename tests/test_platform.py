@@ -258,7 +258,19 @@ def test_geospatial_queries_and_clustering():
     assert "avg_engagement_rate" in top_cluster
     assert len(top_cluster["top_handles"]) > 0
 
-    print(f"[PASS] test_geospatial_queries_and_clustering: Verified {len(clusters)} city clusters (top cluster has {top_cluster['creators_count']} creators in {top_cluster['city']}).")
+    # 5. CARTO Basemap API Key config endpoints
+    cfg_get = client.get("/api/geo/config")
+    assert cfg_get.status_code == 200
+    assert "carto_api_key" in cfg_get.json()
+
+    cfg_post = client.post("/api/geo/config", json={"api_key": "test_carto_key_999"})
+    assert cfg_post.status_code == 200
+    assert cfg_post.json()["carto_api_key"] == "test_carto_key_999"
+
+    # Reset back to default key
+    client.post("/api/geo/config", json={"api_key": "cb1_4ezo_1_7d64896af4f435381c3f8b1a"})
+
+    print(f"[PASS] test_geospatial_queries_and_clustering: Verified {len(clusters)} city clusters (top cluster has {top_cluster['creators_count']} creators in {top_cluster['city']}) and CARTO config.")
 
 def test_adbms_lab_pipelines_and_explain_benchmark():
     """Verify all 4 ADBMS aggregation pipelines, explain benchmark, and index storage catalogs"""
