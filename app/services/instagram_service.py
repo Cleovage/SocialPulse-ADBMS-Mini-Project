@@ -594,6 +594,90 @@ class InstagramService:
                     "recent_posts": recent_posts,
                     "source": "synthetic"
                 }
+
+            # High-fidelity benchmark profiles for common demo creators when live scraper is rate-limited
+            DEMO_CREATORS = {
+                "leomessi": {
+                    "full_name": "Leo Messi",
+                    "bio": "Bienvenidos a la cuenta oficial de Instagram de Leo Messi / Welcome to the official Leo Messi Instagram account",
+                    "followers": 504_200_000,
+                    "following": 320,
+                    "posts_count": 1320,
+                    "is_verified": True,
+                    "avatar": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Lionel-Messi-Argentina-2022-FIFA-World-Cup_%28cropped%29.jpg",
+                    "er": 1.48
+                },
+                "therock": {
+                    "full_name": "Dwayne Johnson",
+                    "bio": "Mana. Gratitude. Grit. Co-Founder ZOA Energy, Teremana Tequila, Under Armour Project Rock.",
+                    "followers": 395_400_000,
+                    "following": 745,
+                    "posts_count": 7920,
+                    "is_verified": True,
+                    "avatar": "https://upload.wikimedia.org/wikipedia/commons/1/11/Dwayne_%22The_Rock%22_Johnson_Visits_the_Pentagon_%2841%29_%28cropped%29.jpg",
+                    "er": 0.52
+                },
+                "mkbhd": {
+                    "full_name": "Marques Brownlee",
+                    "bio": "Quality tech videos | YouTube creator | Waveform podcast | Ultimate Frisbee pro",
+                    "followers": 4_820_000,
+                    "following": 510,
+                    "posts_count": 1640,
+                    "is_verified": True,
+                    "avatar": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Marques_Brownlee_2023.jpg",
+                    "er": 3.12
+                },
+                "zuck": {
+                    "full_name": "Mark Zuckerberg",
+                    "bio": "Building the future of human connection at Meta.",
+                    "followers": 15_100_000,
+                    "following": 640,
+                    "posts_count": 360,
+                    "is_verified": True,
+                    "avatar": "https://upload.wikimedia.org/wikipedia/commons/1/18/Mark_Zuckerberg_F8_2019_Keynote_%2832830578187%29_%28cropped%29.jpg",
+                    "er": 2.75
+                }
+            }
+
+            if clean_user in DEMO_CREATORS:
+                d = DEMO_CREATORS[clean_user]
+                followers = d["followers"]
+                er = d["er"]
+                avg_likes = int(followers * (er / 100.0) * 0.95)
+                avg_comments = int(followers * (er / 100.0) * 0.05)
+
+                demo_posts = []
+                for i in range(6):
+                    is_vid = i % 2 == 1
+                    var = 0.85 + ((i * 7 + 13) % 35) / 100.0
+                    demo_posts.append({
+                        "post_id": f"demo_{clean_user}_{i+1}",
+                        "caption": f"Official update from @{clean_user} • Stay tuned for more exciting developments!",
+                        "likes": int(avg_likes * var),
+                        "comments": int(avg_comments * var),
+                        "post_type": "Video" if is_vid else "Image",
+                        "url": f"https://www.instagram.com/{clean_user}/",
+                        "thumbnail": ""
+                    })
+
+                return {
+                    "username": clean_user,
+                    "full_name": d["full_name"],
+                    "bio": d["bio"],
+                    "profile_pic_url": d["avatar"],
+                    "is_verified": d["is_verified"],
+                    "is_private": False,
+                    "followers_count": followers,
+                    "following_count": d["following"],
+                    "posts_count": d["posts_count"],
+                    "engagement_rate": er,
+                    "avg_likes": avg_likes,
+                    "avg_comments": avg_comments,
+                    "er_calculation_method": "synthetic_benchmark",
+                    "recent_posts": demo_posts,
+                    "source": "synthetic"
+                }
+
         except Exception as e:
             logger.warning(f"Error querying synthetic fallback: {e}")
 
